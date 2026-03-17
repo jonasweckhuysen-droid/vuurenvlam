@@ -89,7 +89,6 @@
       transform: scale(1.03);
     }
 
-    /* 👉 EXTRA RUIMTE VOOR TERUGKNOP */
     .back-btn {
       margin-top: 40px;
     }
@@ -145,7 +144,6 @@
 
   </div>
 
-  <!-- 👉 MOOIE TERUGKNOP MET EXTRA RUIMTE -->
   <a href="index.html" class="btn back-btn">
     <span class="material-symbols-rounded">arrow_back</span>
     Terug
@@ -160,7 +158,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
   const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   const beschikbareDatums = [
@@ -171,19 +168,46 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
   const tijdsblokken = ["10:00", "13:30"];
-
   const select = document.getElementById("datumSelect");
 
-  // 👉 dropdown correct vullen
-  beschikbareDatums.forEach(datum => {
-    tijdsblokken.forEach(tijd => {
-      const option = document.createElement("option");
-      option.value = datum + " - " + tijd;
-      option.textContent = "🔥 " + datum + " om " + tijd;
-      select.appendChild(option);
-    });
-  });
+  // 🔥 SLOTS LADEN (EN VOLLE VERWIJDEREN)
+  async function laadBeschikbareSlots() {
 
+    const { data, error } = await supabase
+      .from("aanvragen")
+      .select("datum");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const bezet = data.map(item => item.datum);
+
+    select.innerHTML = '<option value="">-- Kies datum & uur --</option>';
+
+    beschikbareDatums.forEach(datum => {
+      tijdsblokken.forEach(tijd => {
+
+        const key = datum + " - " + tijd;
+
+        // ❌ al bezet → niet tonen
+        if (bezet.includes(key)) return;
+
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = "🔥 " + datum + " om " + tijd;
+
+        select.appendChild(option);
+
+      });
+    });
+  }
+
+  // 👉 dropdown laden bij start
+  laadBeschikbareSlots();
+
+  // 🔥 FORM SUBMIT
   document.getElementById("aanvraagForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
@@ -199,10 +223,22 @@ document.addEventListener("DOMContentLoaded", function () {
       status: "nieuw"
     };
 
+    // 🔴 EXTRA CHECK TEGEN DUBBEL BOEKEN
+    const { data: bestaande } = await supabase
+      .from("aanvragen")
+      .select("id")
+      .eq("datum", data.datum);
+
+    if (bestaande.length > 0) {
+      alert("Dit tijdslot is net al ingenomen!");
+      laadBeschikbareSlots();
+      return;
+    }
+
     const { error } = await supabase.from("aanvragen").insert([data]);
 
     if (error) {
-      alert("Fout bij verzenden 😢");
+      alert("Fout bij verzenden 😢: " + error.message);
       console.error(error);
     } else {
       window.location.href = "bedankt.html";
