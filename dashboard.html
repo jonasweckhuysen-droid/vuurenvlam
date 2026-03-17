@@ -1,181 +1,196 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Bezoekaanvragen - Kalender</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Bezoeken</title>
 
-  <!-- FullCalendar CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
 
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f4f4;
+}
 
-    header {
-      background-color: #c71f1f;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
+header {
+  background: #c71f1f;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 20px;
+}
 
-    .container {
-      max-width: 1000px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
 
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-top: 0;
-    }
+#calendar {
+  margin-top: 20px;
+}
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+}
 
-    label {
-      font-weight: 500;
-      margin-bottom: 5px;
-    }
+.modal-content {
+  background: white;
+  padding: 20px;
+  max-width: 400px;
+  margin: 100px auto;
+  border-radius: 10px;
+}
 
-    input, select, textarea {
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      width: 100%;
-    }
+button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
-    input[type="date"],
-    input[type="time"] {
-      cursor: pointer;
-    }
+.btn-approve { background: green; color: white; }
+.btn-reject { background: red; color: white; }
+.btn-close { background: gray; color: white; }
 
-    .button-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-    }
-
-    button {
-      padding: 12px;
-      background-color: #c71f1f;
-      color: white;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background-color: #a31a1a;
-    }
-
-    #calendar {
-      max-width: 100%;
-      margin-top: 20px;
-    }
-
-    @media (max-width: 600px) {
-      .button-group {
-        flex-direction: column;
-      }
-    }
-  </style>
+</style>
 </head>
+
 <body>
 
-  <header>
-    <h1>Dashboard Bezoekaanvragen</h1>
-  </header>
+<header>🔥 Dashboard Bezoekaanvragen</header>
 
-  <div class="container">
-    <form id="bezoekForm">
-      <label for="naam">Naam:</label>
-      <input type="text" id="naam" name="naam" placeholder="Voer uw naam in" required>
+<div class="container">
+  <div id="calendar"></div>
+</div>
 
-      <label for="email">E-mail:</label>
-      <input type="email" id="email" name="email" placeholder="voorbeeld@mail.com" required>
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3>Details aanvraag</h3>
+    <p id="details"></p>
 
-      <label for="datum">Datum:</label>
-      <input type="date" id="datum" name="datum" required>
-
-      <label for="tijd">Tijd:</label>
-      <input type="time" id="tijd" name="tijd" required>
-
-      <label for="opmerkingen">Opmerkingen:</label>
-      <textarea id="opmerkingen" name="opmerkingen" rows="3" placeholder="Eventuele opmerkingen..."></textarea>
-
-      <div class="button-group">
-        <button type="submit">Verstuur aanvraag</button>
-        <button type="button" onclick="resetForm()">Reset formulier</button>
-      </div>
-    </form>
-
-    <div id="calendar"></div>
+    <button class="btn-approve" onclick="updateStatus('goedgekeurd')">Goedkeuren</button>
+    <button class="btn-reject" onclick="updateStatus('geweigerd')">Weigeren</button>
+    <button class="btn-close" onclick="closeModal()">Sluiten</button>
   </div>
+</div>
 
-  <!-- FullCalendar JS -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-  <script>
-    const form = document.getElementById('bezoekForm');
-    const calendarEl = document.getElementById('calendar');
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
-    // Kalender initialiseren
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      locale: 'nl',
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      },
-      events: [] // hier komen de aanvragen
+<script>
+const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+let selectedId = null;
+
+// 🔥 Kalender starten
+const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+  initialView: 'dayGridMonth',
+  locale: 'nl',
+  eventClick: function(info) {
+    selectedId = info.event.extendedProps.id;
+
+    document.getElementById("details").innerHTML = `
+      <b>School:</b> ${info.event.extendedProps.school}<br>
+      <b>Begeleider:</b> ${info.event.extendedProps.begeleider}<br>
+      <b>Email:</b> ${info.event.extendedProps.email}<br>
+      <b>GSM:</b> ${info.event.extendedProps.gsm}<br>
+      <b>Aantal:</b> ${info.event.extendedProps.aantal}<br>
+      <b>Status:</b> ${info.event.extendedProps.status}
+    `;
+
+    document.getElementById("modal").style.display = "block";
+  }
+});
+
+calendar.render();
+
+// 🔥 Data laden uit Supabase
+async function loadData() {
+  const { data, error } = await supabase.from("aanvragen").select("*");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  data.forEach(item => {
+
+    // datum splitsen (vb: "10 april 2026 - 10:00")
+    let parts = item.datum.split(" - ");
+    let date = convertToISO(parts[0]) + "T" + parts[1];
+
+    calendar.addEvent({
+      title: item.school,
+      start: date,
+      color: getColor(item.status),
+      extendedProps: item
     });
-    calendar.render();
 
-    // Formulier submit
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
+  });
+}
 
-      const naam = document.getElementById('naam').value;
-      const email = document.getElementById('email').value;
-      const datum = document.getElementById('datum').value;
-      const tijd = document.getElementById('tijd').value;
-      const opmerkingen = document.getElementById('opmerkingen').value;
+// 🔥 Datum converteren naar ISO
+function convertToISO(datum) {
+  const maanden = {
+    januari: "01", februari: "02", maart: "03", april: "04",
+    mei: "05", juni: "06", juli: "07", augustus: "08",
+    september: "09", oktober: "10", november: "11", december: "12"
+  };
 
-      // Voeg aanvraag toe aan de kalender
-      calendar.addEvent({
-        title: `${naam} (${tijd})`,
-        start: datum,
-        allDay: false,
-        extendedProps: {
-          email: email,
-          opmerkingen: opmerkingen
-        }
-      });
+  let parts = datum.split(" ");
+  let dag = parts[0];
+  let maand = maanden[parts[1]];
+  let jaar = parts[2];
 
-      form.reset();
-    });
+  return `${jaar}-${maand}-${dag.padStart(2,'0')}`;
+}
 
-    function resetForm() {
-      form.reset();
-    }
-  </script>
+// 🔥 Kleur op basis van status
+function getColor(status) {
+  if (status === "nieuw") return "orange";
+  if (status === "goedgekeurd") return "green";
+  if (status === "geweigerd") return "red";
+  return "blue";
+}
+
+// 🔥 Status aanpassen
+async function updateStatus(status) {
+  const { error } = await supabase
+    .from("aanvragen")
+    .update({ status: status })
+    .eq("id", selectedId);
+
+  if (error) {
+    alert("Fout bij update");
+    return;
+  }
+
+  location.reload();
+}
+
+// 🔥 Modal sluiten
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+// Start
+loadData();
+
+</script>
+
 </body>
 </html>
