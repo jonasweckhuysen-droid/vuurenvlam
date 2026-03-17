@@ -125,17 +125,30 @@ async function register() {
     return;
   }
 
-  const { error } = await supabase.auth.signUp({
+  // 🔥 Registreren
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email: email,
     password: password
   });
 
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("✅ Account aangemaakt!");
-    window.location.href = "login.html";
+  if (signUpError) {
+    alert(signUpError.message);
+    return;
   }
+
+  // 🔥 Direct automatisch inloggen
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (signInError) {
+    alert("Account aangemaakt, maar inloggen mislukt: " + signInError.message);
+    return;
+  }
+
+  // 🔥 Succes: doorsturen naar dashboard
+  window.location.href = "dashboard.html";
 }
 </script>
 
