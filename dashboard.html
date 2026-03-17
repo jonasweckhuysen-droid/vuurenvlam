@@ -22,6 +22,13 @@ header {
   font-size: 20px;
 }
 
+#welcome {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 18px;
+  color: #333;
+}
+
 .container {
   max-width: 1100px;
   margin: 20px auto;
@@ -71,12 +78,23 @@ button {
 .slot {
   margin: 5px 0;
 }
+
+.logout-btn {
+  margin-top: 20px;
+  padding: 12px 20px;
+  background: #c71f1f;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
 <header>🔥 Dashboard Bezoekaanvragen</header>
+<div id="welcome">Welkom, ...</div>
 
 <div class="container">
   <div id="calendar"></div>
@@ -113,13 +131,17 @@ let datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
 let tijden = ["10:00","13:30"];
 let checkboxes = [];
 
-// 🔐 Check login
+// 🔐 Check login en toon welkom
 (async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     window.location.href = "login.html";
   }
   userEmail = user.email;
+
+  // persoonlijke begroeting
+  document.getElementById("welcome").innerText = `Welkom, ${user.email}!`;
+
   laadBeschikbaarheidSlots();
   loadData();
 })();
@@ -131,7 +153,6 @@ const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), 
   eventClick: async function(info) {
     selectedId = info.event.extendedProps.id;
 
-    // Haal beschikbaarheid op voor dit tijdslot
     const { data: mensen } = await supabase
       .from("beschikbaarheid")
       .select("user_email")
@@ -170,7 +191,6 @@ async function loadData() {
   });
 }
 
-// 🔥 Datum converteren naar ISO
 function convertToISO(datum) {
   const maanden = {
     januari:"01", februari:"02", maart:"03", april:"04",
@@ -184,7 +204,6 @@ function convertToISO(datum) {
   return `${jaar}-${maand}-${dag.padStart(2,'0')}`;
 }
 
-// 🔥 Kleur op basis van status
 function getColor(status) {
   if(status==="nieuw") return "orange";
   if(status==="goedgekeurd") return "green";
@@ -192,14 +211,12 @@ function getColor(status) {
   return "blue";
 }
 
-// 🔥 Status aanpassen
 async function updateStatus(status) {
-  const { error } = await supabase.from("aanvragen").update({ status: status }).eq("id", selectedId);
+  const { error } = await supabase.from("aanvragen").update({ status }).eq("id", selectedId);
   if (error) { alert("Fout bij update"); return; }
   location.reload();
 }
 
-// 🔥 Modal sluiten
 function closeModal() {
   document.getElementById("modal").style.display = "none";
 }
@@ -227,7 +244,7 @@ function laadBeschikbaarheidSlots() {
     });
   });
 
-  // ✅ Vullen met reeds opgeslagen beschikbaarheid
+  // Vullen met reeds opgeslagen beschikbaarheid
   (async () => {
     const { data: bestaande, error } = await supabase
       .from("beschikbaarheid")
@@ -244,12 +261,9 @@ function laadBeschikbaarheidSlots() {
   })();
 }
 
-// 🔥 BESCHIKBAARHEID OPSLAAN
 async function opslaanBeschikbaarheid() {
-  // Oude verwijderen
   await supabase.from("beschikbaarheid").delete().eq("user_email", userEmail);
 
-  // Nieuwe toevoegen
   const inserts = checkboxes.filter(cb => cb.checked).map(cb => ({
     user_email: userEmail,
     datum: cb.value
@@ -269,7 +283,7 @@ async function logout() {
 }
 </script>
 
-<button onclick="logout()">Logout</button>
+<button class="logout-btn" onclick="logout()">Logout</button>
 
 </body>
 </html>
