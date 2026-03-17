@@ -77,7 +77,7 @@ button:hover {
 }
 
 p {
-  margin-top: 20px;
+  margin-top: 15px;
   font-size: 14px;
 }
 
@@ -105,6 +105,7 @@ p a {
 
   <button onclick="login()">Login</button>
 
+  <p><a href="#" onclick="forgotPassword()">Wachtwoord vergeten?</a></p>
   <p>Nog geen account? <a href="register.html">Registreer hier</a></p>
 </div>
 
@@ -120,15 +121,44 @@ async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  const { error } = await supabase.auth.signInWithPassword({
+  if (!email || !password) {
+    alert("Vul zowel email als wachtwoord in!");
+    return;
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: email,
     password: password
   });
 
   if (error) {
-    alert(error.message);
+    alert("Login mislukt: " + error.message);
+    return;
+  }
+
+  // Check of gebruiker bevestigd is
+  if (!data.user.confirmed_at) {
+    alert("Je account is nog niet bevestigd! Controleer je e-mail.");
+    await supabase.auth.signOut();
+    return;
+  }
+
+  // Succes: naar dashboard
+  window.location.href = "dashboard.html";
+}
+
+async function forgotPassword() {
+  const email = prompt("Vul je e-mailadres in om je wachtwoord te resetten:");
+  if (!email) return;
+
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+
+  if (error) {
+    alert("Fout bij wachtwoord reset: " + error.message);
   } else {
-    window.location.href = "dashboard.html";
+    alert("✅ Check je e-mail om je wachtwoord te resetten.");
   }
 }
 </script>
