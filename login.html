@@ -4,113 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
-
 <style>
 body {
-  margin: 0;
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(160deg, #ff6a00, #ffb347);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  margin: 0;
   color: white;
 }
-
-.card {
+.container {
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(10px);
-  padding: 40px;
+  padding: 30px;
   border-radius: 25px;
-  width: 350px;
-  text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  width: 350px;
 }
-
-.card h2 {
-  margin-bottom: 30px;
-}
-
-.input-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.input-group label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
 input {
   width: 100%;
   padding: 12px;
+  margin-bottom: 15px;
   border-radius: 15px;
   border: none;
   font-size: 16px;
 }
-
 button {
-  margin-top: 15px;
-  padding: 15px;
   width: 100%;
-  background: white;
-  color: #ff6a00;
+  padding: 15px;
+  border: none;
   border-radius: 20px;
   font-size: 18px;
-  border: none;
   font-weight: bold;
+  background: white;
+  color: #ff6a00;
   cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
 }
-
-button:hover {
-  transform: scale(1.03);
-}
-
-p {
-  margin-top: 15px;
-  font-size: 14px;
-}
-
-p a {
-  color: white;
-  text-decoration: underline;
-}
+button:hover { transform: scale(1.03); }
+a { color: white; text-decoration: underline; }
 </style>
 </head>
-
 <body>
 
-<div class="card">
+<div class="container">
   <h2>🔐 Login</h2>
-
-  <div class="input-group">
-    <label><span class="material-symbols-rounded">email</span>Email</label>
-    <input type="email" id="email" placeholder="Email">
-  </div>
-
-  <div class="input-group">
-    <label><span class="material-symbols-rounded">lock</span>Wachtwoord</label>
-    <input type="password" id="password" placeholder="Wachtwoord">
-  </div>
-
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Wachtwoord"><br>
   <button onclick="login()">Login</button>
-
-  <p><a href="#" onclick="forgotPassword()">Wachtwoord vergeten?</a></p>
-  <p>Nog geen account? <a href="register.html">Registreer hier</a></p>
+  <p>Nog geen account? <a href="register.html">Registreer</a></p>
+  <p><a href="#" onclick="resetPassword()">Wachtwoord vergeten?</a></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 <script>
 const supabase = window.supabase.createClient(
   "https://elmkjlqcsshctmnbqbfq.supabase.co",
@@ -121,45 +68,40 @@ async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  if (!email || !password) {
-    alert("Vul zowel email als wachtwoord in!");
-    return;
-  }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    alert("Login mislukt: " + error.message);
+    alert(error.message);
     return;
   }
 
-  // Check of gebruiker bevestigd is
-  if (!data.user.confirmed_at) {
-    alert("Je account is nog niet bevestigd! Controleer je e-mail.");
+  // ✅ Check goedkeuring
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", data.user.id)
+    .single();
+
+  if (!profile.approved) {
+    alert("Je account is nog niet goedgekeurd door de beheerder!");
     await supabase.auth.signOut();
     return;
   }
 
-  // Succes: naar dashboard
   window.location.href = "dashboard.html";
 }
 
-async function forgotPassword() {
-  const email = prompt("Vul je e-mailadres in om je wachtwoord te resetten:");
+// 🔥 Wachtwoord vergeten
+async function resetPassword() {
+  const email = prompt("Vul je emailadres in:");
   if (!email) return;
 
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/login.html'
+    redirectTo: window.location.origin + "/login.html"
   });
 
-  if (error) {
-    alert("Fout bij wachtwoord reset: " + error.message);
-  } else {
-    alert("✅ Check je e-mail om je wachtwoord te resetten.");
-  }
+  if (error) alert(error.message);
+  else alert("Er is een e-mail verzonden om je wachtwoord opnieuw in te stellen!");
 }
 </script>
 
