@@ -91,13 +91,20 @@ async function register() {
   }
 
   // 🔐 Registratie
-  const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+  const { data, error: signUpError } = await supabase.auth.signUp({
     email,
     password
   });
 
   if (signUpError) {
     alert("Fout bij registratie: " + signUpError.message);
+    return;
+  }
+
+  const user = data.user;
+
+  if (!user) {
+    alert("Registratie gelukt, maar geen user-object terug. Controleer Supabase instellingen.");
     return;
   }
 
