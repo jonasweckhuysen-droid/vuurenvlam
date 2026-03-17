@@ -5,55 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vuur & Vlam</title>
 
+  <!-- Google Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #ff7b00, #ffb347);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(160deg, #ff6a00, #ffb347);
       color: white;
       text-align: center;
     }
 
     header {
       padding: 20px;
-      font-size: 28px;
+      font-size: 26px;
       font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 25px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
     img {
       width: 80%;
-      max-width: 400px;
-      margin-top: 20px;
+      max-width: 320px;
+      border-radius: 20px;
     }
 
     .btn {
-      display: block;
-      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px auto;
       padding: 15px;
-      width: 80%;
-      max-width: 300px;
+      width: 90%;
+      max-width: 320px;
       background: white;
-      color: #ff7b00;
-      border-radius: 10px;
+      color: #ff6a00;
+      border-radius: 20px;
       font-size: 18px;
       text-decoration: none;
       font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
     .btn:hover {
-      background: #ffe0c2;
+      transform: scale(1.03);
+    }
+
+    .material-symbols-rounded {
+      font-size: 24px;
+    }
+
+    /* POPUP */
+    .popup {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      color: #333;
+      padding: 15px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 350px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: none;
+      text-align: left;
+    }
+
+    .popup button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #ff6a00;
+      color: white;
+      font-weight: bold;
+      width: 100%;
     }
   </style>
 </head>
 
 <body>
 
-  <header>🔥 Vuur & Vlam 🔥</header>
+<header>🔥 Vuur & Vlam 🔥</header>
 
-  <img src="mascotte.png" alt="Mascotte">
+<div class="container">
 
-  <a href="#" class="btn">Bezoek aanvragen</a>
-  <a href="#" class="btn">Inloggen</a>
+  <div class="card">
+    <img src="mascotte.png" alt="Mascotte">
+  </div>
+
+  <a href="#" class="btn">
+    <span class="material-symbols-rounded">event</span>
+    Bezoek aanvragen
+  </a>
+
+  <a href="#" class="btn">
+    <span class="material-symbols-rounded">login</span>
+    Inloggen
+  </a>
+
+</div>
+
+<!-- INSTALL POPUP -->
+<div class="popup" id="installPopup">
+  <strong>📲 Installeer deze app</strong>
+  <p>Voeg Vuur & Vlam toe aan je startscherm voor snelle toegang!</p>
+  <button onclick="installApp()">Installeren</button>
+</div>
+
+<script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installPopup').style.display = 'block';
+  });
+
+  function installApp() {
+    document.getElementById('installPopup').style.display = 'none';
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+      });
+    }
+  }
+</script>
 
 </body>
 </html>
