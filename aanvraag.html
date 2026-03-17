@@ -127,9 +127,9 @@
 
       <div class="input-group">
         <label>📆 Kies een datum</label>
-        <select id="datumSelect" required>
-          <option value="">-- Kies een datum --</option>
-        </select>
+       <select id="datumSelect" required>
+  <option value="">-- Kies datum & uur --</option>
+</select>
       </div>
 
       <button class="btn">Aanvraag versturen 🔥</button>
@@ -142,7 +142,7 @@
 </div>
 
 <script>
-  // 👉 HIER kan jij later datums aanpassen
+  // 👉 Datums (later zelf aanpasbaar)
   const beschikbareDatums = [
     "10 april 2026",
     "15 april 2026",
@@ -150,13 +150,21 @@
     "5 mei 2026"
   ];
 
+  // 👉 Tijdsblokken
+  const tijdsblokken = [
+    "10:00",
+    "13:30"
+  ];
+
   const select = document.getElementById("datumSelect");
 
   beschikbareDatums.forEach(datum => {
-    const option = document.createElement("option");
-    option.value = datum;
-    option.textContent = "🔥 " + datum;
-    select.appendChild(option);
+    tijdsblokken.forEach(tijd => {
+      const option = document.createElement("option");
+      option.value = datum + " - " + tijd;
+      option.textContent = "🔥 " + datum + " om " + tijd;
+      select.appendChild(option);
+    });
   });
 
   // Form submit (tijdelijk)
