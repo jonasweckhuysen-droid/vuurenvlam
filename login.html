@@ -5,56 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
 <style>
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(160deg, #ff6a00, #ffb347);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  color: white;
-}
-.container {
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 25px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  width: 350px;
-}
-input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 15px;
-  border: none;
-  font-size: 16px;
-}
-button {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 20px;
-  font-size: 18px;
-  font-weight: bold;
-  background: white;
-  color: #ff6a00;
-  cursor: pointer;
-}
-button:hover { transform: scale(1.03); }
-a { color: white; text-decoration: underline; }
+body { font-family:'Segoe UI'; background: linear-gradient(160deg,#ff6a00,#ffb347); display:flex;justify-content:center;align-items:center;height:100vh;margin:0; }
+.container { background: rgba(255,255,255,0.15); backdrop-filter:blur(10px); padding:30px; border-radius:25px; width:350px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+h2 { color:white; margin-bottom:20px; }
+input { width:100%; padding:12px; margin-bottom:15px; border-radius:15px; border:none; font-size:16px; }
+button { width:100%; padding:15px; background:white; color:#ff6a00; font-weight:bold; font-size:16px; border-radius:20px; border:none; cursor:pointer; }
+button:hover { transform:scale(1.03); }
+p { color:white; margin-top:15px; }
 </style>
 </head>
 <body>
-
 <div class="container">
   <h2>🔐 Login</h2>
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Wachtwoord"><br>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Wachtwoord">
   <button onclick="login()">Login</button>
-  <p>Nog geen account? <a href="register.html">Registreer</a></p>
-  <p><a href="#" onclick="resetPassword()">Wachtwoord vergeten?</a></p>
+  <p>Nog geen account? <a href="register.html" style="color:white;text-decoration:underline;">Registreer</a></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -68,42 +34,11 @@ async function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  // ✅ Check goedkeuring
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("user_id", data.user.id)
-    .single();
-
-  if (!profile.approved) {
-    alert("Je account is nog niet goedgekeurd door de beheerder!");
-    await supabase.auth.signOut();
-    return;
-  }
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { alert("Fout bij login: " + error.message); return; }
 
   window.location.href = "dashboard.html";
 }
-
-// 🔥 Wachtwoord vergeten
-async function resetPassword() {
-  const email = prompt("Vul je emailadres in:");
-  if (!email) return;
-
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + "/login.html"
-  });
-
-  if (error) alert(error.message);
-  else alert("Er is een e-mail verzonden om je wachtwoord opnieuw in te stellen!");
-}
 </script>
-
 </body>
 </html>
