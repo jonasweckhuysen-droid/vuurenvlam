@@ -78,18 +78,20 @@
       border: none;
       font-weight: bold;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
     }
 
     .btn:hover {
       transform: scale(1.03);
     }
 
-    .back {
-      text-align: center;
-      margin-top: 15px;
-      display: block;
-      color: white;
-      text-decoration: underline;
+    /* 👉 EXTRA RUIMTE VOOR TERUGKNOP */
+    .back-btn {
+      margin-top: 40px;
     }
   </style>
 </head>
@@ -132,9 +134,9 @@
 
       <div class="input-group">
         <label>📆 Kies een datum</label>
-       <select id="datumSelect" required>
-  <option value="">-- Kies datum & uur --</option>
-</select>
+        <select id="datumSelect" required>
+          <option value="">-- Kies datum & uur --</option>
+        </select>
       </div>
 
       <button class="btn">Aanvraag versturen 🔥</button>
@@ -143,14 +145,19 @@
 
   </div>
 
-  <a href="index.html" class="btn">
-  <span class="material-symbols-rounded">arrow_back</span>
-  Terug
-</a>
+  <!-- 👉 MOOIE TERUGKNOP MET EXTRA RUIMTE -->
+  <a href="index.html" class="btn back-btn">
+    <span class="material-symbols-rounded">arrow_back</span>
+    Terug
+  </a>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+
   const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
   const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
 
@@ -164,8 +171,10 @@
   ];
 
   const tijdsblokken = ["10:00", "13:30"];
+
   const select = document.getElementById("datumSelect");
 
+  // 👉 dropdown correct vullen
   beschikbareDatums.forEach(datum => {
     tijdsblokken.forEach(tijd => {
       const option = document.createElement("option");
@@ -199,6 +208,8 @@
       window.location.href = "bedankt.html";
     }
   });
+
+});
 </script>
 
 </body>
