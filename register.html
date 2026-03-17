@@ -13,16 +13,23 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  color: white;
 }
+
 .container {
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(10px);
   padding: 30px;
   border-radius: 25px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   width: 350px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
+
+h2 {
+  color: white;
+  margin-bottom: 20px;
+}
+
 input {
   width: 100%;
   padding: 12px;
@@ -31,30 +38,40 @@ input {
   border: none;
   font-size: 16px;
 }
+
 button {
   width: 100%;
   padding: 15px;
-  border: none;
-  border-radius: 20px;
-  font-size: 18px;
-  font-weight: bold;
   background: white;
   color: #ff6a00;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 20px;
+  border: none;
   cursor: pointer;
 }
-button:hover { transform: scale(1.03); }
-a { color: white; text-decoration: underline; }
+
+button:hover {
+  transform: scale(1.03);
+}
+
+p {
+  color: white;
+  margin-top: 15px;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
   <h2>👨‍🚒 Registreren</h2>
-  <input type="text" id="name" placeholder="Naam"><br>
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Wachtwoord"><br>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Wachtwoord">
   <button onclick="register()">Registreren</button>
-  <p>Al een account? <a href="login.html">Login</a></p>
+
+  <p>Al een account? <a href="login.html" style="color:white;text-decoration:underline;">Login</a></p>
+  <p><a href="forgot.html" style="color:white;text-decoration:underline;">Wachtwoord vergeten?</a></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -67,24 +84,34 @@ const supabase = window.supabase.createClient(
 async function register() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  const name = document.getElementById("name").value;
 
-  const { data: user, error } = await supabase.auth.signUp({ email, password });
-
-  if (error) {
-    alert(error.message);
+  if (!email || !password) {
+    alert("Vul email en wachtwoord in!");
     return;
   }
 
-  // ✅ Voeg profiel toe aan 'profiles' tabel met approved = false
-  await supabase.from("profiles").insert({
-    user_id: user.user.id,
-    email: email,
-    name: name,
-    approved: false
+  // 🔐 Registratie
+  const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password
   });
 
-  alert("Account aangemaakt! Wacht op goedkeuring van de beheerder.");
+  if (signUpError) {
+    alert("Fout bij registratie: " + signUpError.message);
+    return;
+  }
+
+  // ✅ Profiel aanmaken in tabel 'profiles'
+  const { error: profileError } = await supabase.from("profiles").insert([
+    { user_id: user.id, email: email, approved: false, is_admin: false }
+  ]);
+
+  if (profileError) {
+    alert("Fout bij aanmaken profiel: " + profileError.message);
+    return;
+  }
+
+  alert("Account aangemaakt! Wacht op goedkeuring door admin.");
   window.location.href = "login.html";
 }
 </script>
