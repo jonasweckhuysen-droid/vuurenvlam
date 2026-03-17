@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bezoek aanvragen</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(160deg, #ff6a00, #ffb347);
+      color: white;
+    }
+
+    header {
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 25px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    img {
+      width: 100%;
+      border-radius: 20px;
+      margin-bottom: 15px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 15px;
+      border: none;
+      font-size: 16px;
+    }
+
+    select {
+      background: white;
+      color: #333;
+      appearance: none;
+    }
+
+    .btn {
+      margin-top: 20px;
+      padding: 15px;
+      width: 100%;
+      background: white;
+      color: #ff6a00;
+      border-radius: 20px;
+      font-size: 18px;
+      border: none;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      transform: scale(1.03);
+    }
+
+    .back {
+      text-align: center;
+      margin-top: 15px;
+      display: block;
+      color: white;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>📅 Bezoek aanvragen</header>
+
+<div class="container">
+  <div class="card">
+
+    <img src="mascotte.png" alt="Mascotte">
+
+    <form id="aanvraagForm">
+
+      <div class="input-group">
+        <label>🏫 Schoolnaam</label>
+        <input type="text" required>
+      </div>
+
+      <div class="input-group">
+        <label>👤 Naam begeleider</label>
+        <input type="text" required>
+      </div>
+
+      <div class="input-group">
+        <label>📧 E-mail</label>
+        <input type="email" required>
+      </div>
+
+      <div class="input-group">
+        <label>👨‍👩‍👧‍👦 Aantal kinderen</label>
+        <input type="number" required>
+      </div>
+
+      <div class="input-group">
+        <label>📆 Kies een datum</label>
+        <select id="datumSelect" required>
+          <option value="">-- Kies een datum --</option>
+        </select>
+      </div>
+
+      <button class="btn">Aanvraag versturen 🔥</button>
+
+    </form>
+
+  </div>
+
+  <a href="index.html" class="back">← Terug naar home</a>
+</div>
+
+<script>
+  // 👉 HIER kan jij later datums aanpassen
+  const beschikbareDatums = [
+    "10 april 2026",
+    "15 april 2026",
+    "22 april 2026",
+    "5 mei 2026"
+  ];
+
+  const select = document.getElementById("datumSelect");
+
+  beschikbareDatums.forEach(datum => {
+    const option = document.createElement("option");
+    option.value = datum;
+    option.textContent = "🔥 " + datum;
+    select.appendChild(option);
+  });
+
+  // Form submit (tijdelijk)
+  document.getElementById("aanvraagForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    alert("Aanvraag verzonden! (later koppelen we dit aan database)");
+  });
+</script>
+
+</body>
+</html>
