@@ -2,18 +2,111 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(160deg, #ff6a00, #ffb347);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+
+.card {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 25px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.card h2 {
+  margin-bottom: 30px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.input-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 15px;
+  border: none;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 15px;
+  padding: 15px;
+  width: 100%;
+  background: white;
+  color: #ff6a00;
+  border-radius: 20px;
+  font-size: 18px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+p {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+p a {
+  color: white;
+  text-decoration: underline;
+}
+</style>
 </head>
+
 <body>
 
-<h2>🔐 Login</h2>
+<div class="card">
+  <h2>🔐 Login</h2>
 
-<input type="email" id="email" placeholder="Email"><br><br>
-<input type="password" id="password" placeholder="Wachtwoord"><br><br>
+  <div class="input-group">
+    <label><span class="material-symbols-rounded">email</span>Email</label>
+    <input type="email" id="email" placeholder="Email">
+  </div>
 
-<button onclick="login()">Login</button>
+  <div class="input-group">
+    <label><span class="material-symbols-rounded">lock</span>Wachtwoord</label>
+    <input type="password" id="password" placeholder="Wachtwoord">
+  </div>
 
-<p>Nog geen account? <a href="register.html">Registreer</a></p>
+  <button onclick="login()">Login</button>
+
+  <p>Nog geen account? <a href="register.html">Registreer hier</a></p>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
