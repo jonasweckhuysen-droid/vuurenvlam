@@ -149,7 +149,13 @@
 </a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script>
+  const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+  const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
   const beschikbareDatums = [
     "10 april 2026",
     "15 april 2026",
@@ -158,7 +164,6 @@
   ];
 
   const tijdsblokken = ["10:00", "13:30"];
-
   const select = document.getElementById("datumSelect");
 
   beschikbareDatums.forEach(datum => {
@@ -170,12 +175,30 @@
     });
   });
 
-  // 👉 NIEUW: redirect naar bedankpagina
-  document.getElementById("aanvraagForm").addEventListener("submit", function(e) {
+  document.getElementById("aanvraagForm").addEventListener("submit", async function(e) {
     e.preventDefault();
-    window.location.href = "bedankt.html";
+
+    const inputs = document.querySelectorAll("input");
+
+    const data = {
+      school: inputs[0].value,
+      begeleider: inputs[1].value,
+      email: inputs[2].value,
+      gsm: inputs[3].value,
+      aantal: parseInt(inputs[4].value),
+      datum: select.value,
+      status: "nieuw"
+    };
+
+    const { error } = await supabase.from("aanvragen").insert([data]);
+
+    if (error) {
+      alert("Fout bij verzenden 😢");
+      console.error(error);
+    } else {
+      window.location.href = "bedankt.html";
+    }
   });
-</script>;
 </script>
 
 </body>
