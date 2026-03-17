@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Beschikbaarheid</title>
+
+<style>
+body {
+  font-family: Arial;
+  padding: 20px;
+}
+
+.slot {
+  padding: 10px;
+  margin: 5px 0;
+  background: #f0f0f0;
+  border-radius: 8px;
+}
+
+button {
+  padding: 10px;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>👨‍🚒 Geef je beschikbaarheid door</h2>
+
+<div id="slots"></div>
+
+<button onclick="opslaan()">Opslaan</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://elmkjlqcsshctmnbqbfq.supabase.co",
+  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+);
+
+let userEmail = "";
+let checkboxes = [];
+
+const datums = [
+  "10 april 2026",
+  "15 april 2026",
+  "22 april 2026",
+  "5 mei 2026"
+];
+
+const tijden = ["10:00", "13:30"];
+
+// 🔐 check login
+(async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    window.location.href = "login.html";
+  }
+
+  userEmail = user.email;
+  laadSlots();
+})();
+
+// slots tonen
+function laadSlots() {
+  const container = document.getElementById("slots");
+
+  datums.forEach(datum => {
+    tijden.forEach(tijd => {
+
+      const key = datum + " - " + tijd;
+
+      const div = document.createElement("div");
+      div.className = "slot";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = key;
+
+      checkboxes.push(checkbox);
+
+      div.appendChild(checkbox);
+      div.append(" " + key);
+
+      container.appendChild(div);
+
+    });
+  });
+}
+
+// opslaan
+async function opslaan() {
+
+  // oude verwijderen
+  await supabase
+    .from("beschikbaarheid")
+    .delete()
+    .eq("user_email", userEmail);
+
+  // nieuwe toevoegen
+  const inserts = [];
+
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      inserts.push({
+        user_email: userEmail,
+        datum: cb.value
+      });
+    }
+  });
+
+  if (inserts.length > 0) {
+    await supabase.from("beschikbaarheid").insert(inserts);
+  }
+
+  alert("✅ Beschikbaarheid opgeslagen!");
+}
+</script>
+
+</body>
+</html>
