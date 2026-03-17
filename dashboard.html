@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Bezoekaanvragen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #c71f1f;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    label {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    input, select, textarea {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    input[type="date"],
+    input[type="time"] {
+      cursor: pointer;
+    }
+
+    button {
+      padding: 12px;
+      background-color: #c71f1f;
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #a31a1a;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dashboard Bezoekaanvragen</h1>
+  </header>
+
+  <div class="container">
+    <form id="bezoekForm">
+      <label for="naam">Naam:</label>
+      <input type="text" id="naam" name="naam" placeholder="Voer uw naam in" required>
+
+      <label for="email">E-mail:</label>
+      <input type="email" id="email" name="email" placeholder="voorbeeld@mail.com" required>
+
+      <label for="datum">Datum:</label>
+      <input type="date" id="datum" name="datum" required>
+
+      <label for="tijd">Tijd:</label>
+      <input type="time" id="tijd" name="tijd" required>
+
+      <label for="opmerkingen">Opmerkingen:</label>
+      <textarea id="opmerkingen" name="opmerkingen" rows="3" placeholder="Eventuele opmerkingen..."></textarea>
+
+      <div class="button-group">
+        <button type="submit">Verstuur aanvraag</button>
+        <button type="button" onclick="resetForm()">Reset formulier</button>
+      </div>
+    </form>
+
+    <table id="aanvragenTable">
+      <thead>
+        <tr>
+          <th>Naam</th>
+          <th>E-mail</th>
+          <th>Datum</th>
+          <th>Tijd</th>
+          <th>Opmerkingen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Ingevulde aanvragen verschijnen hier -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById('bezoekForm');
+    const tableBody = document.querySelector('#aanvragenTable tbody');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const naam = document.getElementById('naam').value;
+      const email = document.getElementById('email').value;
+      const datum = document.getElementById('datum').value;
+      const tijd = document.getElementById('tijd').value;
+      const opmerkingen = document.getElementById('opmerkingen').value;
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${naam}</td>
+        <td>${email}</td>
+        <td>${datum}</td>
+        <td>${tijd}</td>
+        <td>${opmerkingen}</td>
+      `;
+      tableBody.appendChild(row);
+
+      form.reset();
+    });
+
+    function resetForm() {
+      form.reset();
+    }
+  </script>
+
+</body>
+</html>
