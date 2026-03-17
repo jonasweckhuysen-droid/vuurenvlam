@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Bezoekaanvragen</title>
+  <title>Dashboard Bezoekaanvragen - Kalender</title>
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -21,7 +25,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 20px auto;
       background: white;
       padding: 20px;
@@ -30,15 +34,16 @@
     }
 
     h1 {
-      margin-top: 0;
       text-align: center;
       color: #333;
+      margin-top: 0;
     }
 
     form {
       display: flex;
       flex-direction: column;
       gap: 15px;
+      margin-bottom: 20px;
     }
 
     label {
@@ -59,6 +64,12 @@
       cursor: pointer;
     }
 
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
     button {
       padding: 12px;
       background-color: #c71f1f;
@@ -75,26 +86,9 @@
       background-color: #a31a1a;
     }
 
-    .button-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    #calendar {
+      max-width: 100%;
       margin-top: 20px;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #f0f0f0;
     }
 
     @media (max-width: 600px) {
@@ -133,26 +127,29 @@
       </div>
     </form>
 
-    <table id="aanvragenTable">
-      <thead>
-        <tr>
-          <th>Naam</th>
-          <th>E-mail</th>
-          <th>Datum</th>
-          <th>Tijd</th>
-          <th>Opmerkingen</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Ingevulde aanvragen verschijnen hier -->
-      </tbody>
-    </table>
+    <div id="calendar"></div>
   </div>
 
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
   <script>
     const form = document.getElementById('bezoekForm');
-    const tableBody = document.querySelector('#aanvragenTable tbody');
+    const calendarEl = document.getElementById('calendar');
 
+    // Kalender initialiseren
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'nl',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      events: [] // hier komen de aanvragen
+    });
+    calendar.render();
+
+    // Formulier submit
     form.addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -162,15 +159,16 @@
       const tijd = document.getElementById('tijd').value;
       const opmerkingen = document.getElementById('opmerkingen').value;
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${naam}</td>
-        <td>${email}</td>
-        <td>${datum}</td>
-        <td>${tijd}</td>
-        <td>${opmerkingen}</td>
-      `;
-      tableBody.appendChild(row);
+      // Voeg aanvraag toe aan de kalender
+      calendar.addEvent({
+        title: `${naam} (${tijd})`,
+        start: datum,
+        allDay: false,
+        extendedProps: {
+          email: email,
+          opmerkingen: opmerkingen
+        }
+      });
 
       form.reset();
     });
@@ -179,6 +177,5 @@
       form.reset();
     }
   </script>
-
 </body>
 </html>
