@@ -121,34 +121,22 @@ async function register() {
   const password = document.getElementById("password").value;
 
   if(!email || !password) {
-    alert("Vul email en wachtwoord in!");
+    alert("Vul zowel email als wachtwoord in!");
     return;
   }
 
   // 🔥 Registreren
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email: email,
     password: password
   });
 
-  if (signUpError) {
-    alert(signUpError.message);
-    return;
+  if (error) {
+    alert("Registratie mislukt: " + error.message);
+  } else {
+    alert("✅ Account aangemaakt! Controleer je e-mail om het account te bevestigen. Daarna kan je inloggen.");
+    window.location.href = "login.html";
   }
-
-  // 🔥 Direct automatisch inloggen
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (signInError) {
-    alert("Account aangemaakt, maar inloggen mislukt: " + signInError.message);
-    return;
-  }
-
-  // 🔥 Succes: doorsturen naar dashboard
-  window.location.href = "dashboard.html";
 }
 </script>
 
