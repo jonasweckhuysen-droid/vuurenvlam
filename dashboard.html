@@ -4,104 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - Bezoeken</title>
-
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-
 <style>
-body {
-  font-family: Arial;
-  margin: 0;
-  background: #f4f4f4;
-}
-
-header {
-  background: #c71f1f;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  font-size: 20px;
-}
-
-#welcome {
-  text-align: center;
-  margin: 15px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.container {
-  max-width: 1100px;
-  margin: 20px auto;
-  padding: 20px;
-  background: white;
-  border-radius: 10px;
-}
-
-#calendar {
-  margin-top: 20px;
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  z-index: 100;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px;
-  max-width: 500px;
-  margin: 100px auto;
-  border-radius: 10px;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
+body { font-family: Arial; margin: 0; background: #f4f4f4; }
+header { background: #c71f1f; color: white; padding: 15px; text-align: center; font-size: 20px; }
+.container { max-width: 1100px; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; }
+#calendar { margin-top: 20px; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; }
+.modal-content { background: white; padding: 20px; max-width: 500px; margin: 100px auto; border-radius: 10px; }
+button { margin-top: 10px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
 .btn-approve { background: green; color: white; }
 .btn-reject { background: red; color: white; }
 .btn-close { background: gray; color: white; }
-
-#beschikbaarheidContainer {
-  margin-top: 20px;
-}
-
-.slot {
-  margin: 5px 0;
-}
-
-.logout-btn {
-  margin-top: 20px;
-  padding: 12px 20px;
-  background: #c71f1f;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-}
+#beschikbaarheidContainer { margin-top: 20px; }
+.slot { margin: 5px 0; }
+#welcome { font-size: 18px; margin-bottom: 15px; }
+.logout-btn { margin-top: 15px; background: #ff6a00; color: white; }
+.logout-btn:hover { transform: scale(1.03); }
 </style>
 </head>
-
 <body>
 
 <header>🔥 Dashboard Bezoekaanvragen</header>
-<div id="welcome">Welkom, ...</div>
 
 <div class="container">
+  <div id="welcome"></div>
   <div id="calendar"></div>
 
   <h3>👨‍🚒 Geef je beschikbaarheid door</h3>
   <div id="beschikbaarheidContainer"></div>
   <button onclick="opslaanBeschikbaarheid()">Opslaan Beschikbaarheid</button>
+  <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
 <!-- MODAL -->
@@ -109,7 +42,6 @@ button {
   <div class="modal-content">
     <h3>Details aanvraag</h3>
     <p id="details"></p>
-
     <button class="btn-approve" onclick="updateStatus('goedgekeurd')">Goedkeuren</button>
     <button class="btn-reject" onclick="updateStatus('geweigerd')">Weigeren</button>
     <button class="btn-close" onclick="closeModal()">Sluiten</button>
@@ -120,7 +52,6 @@ button {
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
-// Supabase setup
 const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
 const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -131,16 +62,27 @@ let datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
 let tijden = ["10:00","13:30"];
 let checkboxes = [];
 
-// 🔐 Check login en toon welkom
+// 🔐 Check login & goedkeuring
 (async () => {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    window.location.href = "login.html";
-  }
+  if (!user) window.location.href = "login.html";
+
   userEmail = user.email;
 
-  // persoonlijke begroeting
-  document.getElementById("welcome").innerText = `Welkom, ${user.email}!`;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!profile.approved) {
+    alert("Je account is nog niet goedgekeurd door de beheerder!");
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+    return;
+  }
+
+  document.getElementById("welcome").innerText = `Welkom, ${profile.name || profile.email}!`;
 
   laadBeschikbaarheidSlots();
   loadData();
@@ -174,7 +116,7 @@ const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), 
 });
 calendar.render();
 
-// 🔥 Data laden uit Supabase
+// 🔥 Data laden
 async function loadData() {
   const { data, error } = await supabase.from("aanvragen").select("*");
   if (error) { console.error(error); return; }
@@ -192,11 +134,9 @@ async function loadData() {
 }
 
 function convertToISO(datum) {
-  const maanden = {
-    januari:"01", februari:"02", maart:"03", april:"04",
+  const maanden = { januari:"01", februari:"02", maart:"03", april:"04",
     mei:"05", juni:"06", juli:"07", augustus:"08",
-    september:"09", oktober:"10", november:"11", december:"12"
-  };
+    september:"09", oktober:"10", november:"11", december:"12" };
   let parts = datum.split(" ");
   let dag = parts[0];
   let maand = maanden[parts[1]];
@@ -217,11 +157,9 @@ async function updateStatus(status) {
   location.reload();
 }
 
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
-}
+function closeModal() { document.getElementById("modal").style.display = "none"; }
 
-// 🔥 BESCHIKBAARHEID SLOTS LADEN
+// 🔥 Beschikbaarheid
 function laadBeschikbaarheidSlots() {
   const container = document.getElementById("beschikbaarheidContainer");
   container.innerHTML = "";
@@ -232,58 +170,40 @@ function laadBeschikbaarheidSlots() {
       const key = datum + " - " + tijd;
       const div = document.createElement("div");
       div.className = "slot";
-
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.value = key;
       checkboxes.push(checkbox);
-
       div.appendChild(checkbox);
       div.append(" " + key);
       container.appendChild(div);
     });
   });
 
-  // Vullen met reeds opgeslagen beschikbaarheid
   (async () => {
-    const { data: bestaande, error } = await supabase
+    const { data: bestaande } = await supabase
       .from("beschikbaarheid")
       .select("datum")
       .eq("user_email", userEmail);
 
-    if (!error && bestaande.length > 0) {
-      bestaande.forEach(b => {
-        checkboxes.forEach(cb => {
-          if (cb.value === b.datum) cb.checked = true;
-        });
-      });
-    }
+    bestaande.forEach(b => {
+      checkboxes.forEach(cb => { if(cb.value===b.datum) cb.checked=true; });
+    });
   })();
 }
 
 async function opslaanBeschikbaarheid() {
   await supabase.from("beschikbaarheid").delete().eq("user_email", userEmail);
-
-  const inserts = checkboxes.filter(cb => cb.checked).map(cb => ({
-    user_email: userEmail,
-    datum: cb.value
-  }));
-
-  if(inserts.length>0) {
-    await supabase.from("beschikbaarheid").insert(inserts);
-  }
-
+  const inserts = checkboxes.filter(cb => cb.checked).map(cb => ({ user_email: userEmail, datum: cb.value }));
+  if(inserts.length>0) await supabase.from("beschikbaarheid").insert(inserts);
   alert("✅ Beschikbaarheid opgeslagen!");
 }
 
-// 🔥 LOGOUT
 async function logout() {
   await supabase.auth.signOut();
   window.location.href = "login.html";
 }
 </script>
-
-<button class="logout-btn" onclick="logout()">Logout</button>
 
 </body>
 </html>
