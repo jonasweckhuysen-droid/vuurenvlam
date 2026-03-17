@@ -1,3 +1,19 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://elmkjlqcsshctmnbqbfq.supabase.co",
+  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+);
+
+(async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    window.location.href = "login.html";
+  }
+})();
+</script>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
