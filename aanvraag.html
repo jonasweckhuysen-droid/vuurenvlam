@@ -121,6 +121,11 @@
       </div>
 
       <div class="input-group">
+        <label>📱 GSM nummer begeleider</label>
+        <input type="tel" required>
+      </div>
+
+      <div class="input-group">
         <label>👨‍👩‍👧‍👦 Aantal kinderen</label>
         <input type="number" required>
       </div>
@@ -142,7 +147,6 @@
 </div>
 
 <script>
-  // 👉 Datums (later zelf aanpasbaar)
   const beschikbareDatums = [
     "10 april 2026",
     "15 april 2026",
@@ -150,11 +154,7 @@
     "5 mei 2026"
   ];
 
-  // 👉 Tijdsblokken
-  const tijdsblokken = [
-    "10:00",
-    "13:30"
-  ];
+  const tijdsblokken = ["10:00", "13:30"];
 
   const select = document.getElementById("datumSelect");
 
@@ -167,11 +167,12 @@
     });
   });
 
-  // Form submit (tijdelijk)
+  // 👉 NIEUW: redirect naar bedankpagina
   document.getElementById("aanvraagForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    alert("Aanvraag verzonden! (later koppelen we dit aan database)");
+    window.location.href = "bedankt.html";
   });
+</script>;
 </script>
 
 </body>
