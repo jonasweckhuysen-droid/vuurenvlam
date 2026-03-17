@@ -82,44 +82,42 @@ const supabase = window.supabase.createClient(
 );
 
 async function register() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
   if (!email || !password) {
-    alert("Vul email en wachtwoord in!");
+    alert("Vul zowel email als wachtwoord in!");
     return;
   }
 
-  // 🔐 Registratie
-  const { data, error: signUpError } = await supabase.auth.signUp({
-    email,
-    password
-  });
+  try {
+    // 🔐 Registratie
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password
+    });
 
-  if (signUpError) {
-    alert("Fout bij registratie: " + signUpError.message);
-    return;
+    if (signUpError) throw signUpError;
+
+    // user kan null zijn als e-mail bevestiging nodig is
+    const userId = data.user?.id || "bevestig via e-mail";
+
+    // ✅ Profiel aanmaken in Supabase tabel 'profiles'
+    const { error: profileError } = await supabase.from("profiles").insert([
+      { user_id: userId, email: email, approved: false, is_admin: false }
+    ]);
+
+    if (profileError) throw profileError;
+
+    // ✅ Melding naar gebruiker
+    alert("Registratie succesvol! 🔥\nControleer je e-mail om je account te bevestigen.\nNa bevestiging wacht op goedkeuring door admin.");
+    
+    window.location.href = "login.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Er is iets misgegaan: " + err.message);
   }
-
-  const user = data.user;
-
-  if (!user) {
-    alert("Registratie gelukt, maar geen user-object terug. Controleer Supabase instellingen.");
-    return;
-  }
-
-  // ✅ Profiel aanmaken in tabel 'profiles'
-  const { error: profileError } = await supabase.from("profiles").insert([
-    { user_id: user.id, email: email, approved: false, is_admin: false }
-  ]);
-
-  if (profileError) {
-    alert("Fout bij aanmaken profiel: " + profileError.message);
-    return;
-  }
-
-  alert("Account aangemaakt! Wacht op goedkeuring door admin.");
-  window.location.href = "login.html";
 }
 </script>
 
