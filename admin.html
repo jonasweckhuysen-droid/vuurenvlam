@@ -6,37 +6,66 @@
 <title>Adminpaneel – Beheer</title>
 
 <style>
+/* -------------------------
+   GLOBAL
+------------------------- */
 body {
   font-family:'Segoe UI';
   background: linear-gradient(160deg,#ff6a00,#ffb347);
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding-top:40px;
-  min-height:100vh;
   margin:0;
+  padding:0;
 }
 
+/* -------------------------
+   CONTAINER
+------------------------- */
 .container {
   background: rgba(255,255,255,0.15);
   backdrop-filter:blur(10px);
-  padding:30px;
+  padding:20px;
   border-radius:25px;
-  width:1100px;
-  text-align:center;
+  max-width:1100px;
+  width:95%;
+  margin:20px auto;
   box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  color:white;
 }
 
-h2 { color:white; margin-bottom:20px; }
-h3 { color:white; margin-top:40px; }
+/* -------------------------
+   HEADERS
+------------------------- */
+h2 {
+  margin-top:0;
+  text-align:center;
+  font-size:26px;
+}
 
+h3 {
+  margin-top:40px;
+  font-size:20px;
+}
+
+/* -------------------------
+   TABLE WRAPPER (MOBILE)
+------------------------- */
+.table-wrapper {
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  margin-top:15px;
+  border-radius:15px;
+}
+
+/* -------------------------
+   TABLES
+------------------------- */
 table {
   width:100%;
   border-collapse:collapse;
-  margin-top:20px;
   background:white;
+  color:black;
   border-radius:15px;
   overflow:hidden;
+  min-width:600px; /* zorgt dat mobiel kan scrollen */
 }
 
 th, td {
@@ -50,12 +79,16 @@ th {
   color:white;
 }
 
+/* -------------------------
+   BUTTONS
+------------------------- */
 button {
-  padding:8px 12px;
+  padding:10px 14px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   cursor:pointer;
   font-size:14px;
+  margin:3px;
 }
 
 .btn-approve { background:green; color:white; }
@@ -72,9 +105,12 @@ button {
   font-weight:bold;
   padding:12px 20px;
   border-radius:20px;
+  width:100%;
 }
 
-/* Modal */
+/* -------------------------
+   MODAL
+------------------------- */
 .modal {
   display:none;
   position:fixed;
@@ -82,14 +118,16 @@ button {
   width:100%; height:100%;
   background:rgba(0,0,0,0.6);
   z-index:100;
+  padding:20px;
 }
 
 .modal-content {
   background:white;
   padding:20px;
+  border-radius:15px;
   max-width:400px;
   margin:80px auto;
-  border-radius:15px;
+  color:black;
 }
 
 .modal-header {
@@ -98,11 +136,9 @@ button {
   align-items:center;
 }
 
-.modal-header h3 { margin:0; }
-
 .modal-body input {
   width:100%;
-  padding:10px;
+  padding:12px;
   border-radius:10px;
   border:1px solid #ccc;
   margin-top:10px;
@@ -111,15 +147,29 @@ button {
 .modal-actions {
   margin-top:15px;
   display:flex;
+  flex-wrap:wrap;
   gap:10px;
 }
 
 .btn-close { background:#555; color:white; }
 
+/* -------------------------
+   MOBILE OPTIMIZATION
+------------------------- */
 @media (max-width: 600px) {
-  .container { width:90%; padding:15px; }
-  table { font-size:13px; }
-  th, td { padding:8px; }
+
+  h2 { font-size:22px; }
+  h3 { font-size:18px; }
+
+  button {
+    width:100%;
+    margin-top:6px;
+  }
+
+  .modal-content {
+    width:100%;
+    margin-top:40px;
+  }
 }
 </style>
 </head>
@@ -129,66 +179,74 @@ button {
 <div class="container">
   <h2>👨‍🚒 Adminpaneel – Volledig beheer</h2>
 
-  <p id="adminInfo" style="color:white;font-size:18px;"></p>
+  <p id="adminInfo" style="font-size:18px;"></p>
 
   <!-- DATUM TOEVOEGEN -->
   <button class="btn-add" onclick="openDatumModal()">📅 Nieuwe datum toevoegen</button>
 
   <!-- GEBRUIKERS -->
   <h3>👥 Gebruikersbeheer</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Naam</th>
-        <th>Goedgekeurd</th>
-        <th>Admin</th>
-        <th>Acties</th>
-      </tr>
-    </thead>
-    <tbody id="userTable"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Naam</th>
+          <th>Goedgekeurd</th>
+          <th>Admin</th>
+          <th>Acties</th>
+        </tr>
+      </thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
 
   <!-- AANVRAGEN -->
   <h3>🏫 Bezoekaanvragen beheren</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>School</th>
-        <th>Datum</th>
-        <th>Post</th>
-        <th>Status</th>
-        <th>Acties</th>
-      </tr>
-    </thead>
-    <tbody id="aanvraagTable"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>School</th>
+          <th>Datum</th>
+          <th>Post</th>
+          <th>Status</th>
+          <th>Acties</th>
+        </tr>
+      </thead>
+      <tbody id="aanvraagTable"></tbody>
+    </table>
+  </div>
 
   <!-- BESCHIKBAARHEID -->
   <h3>📅 Beschikbaarheid van gebruikers</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Datum</th>
-        <th>Aanwezig</th>
-      </tr>
-    </thead>
-    <tbody id="beschikbaarheidTable"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Datum</th>
+          <th>Aanwezig</th>
+        </tr>
+      </thead>
+      <tbody id="beschikbaarheidTable"></tbody>
+    </table>
+  </div>
 
   <!-- LOGS -->
   <h3>📜 Logs</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Tijd</th>
-        <th>Gebruiker</th>
-        <th>Actie</th>
-      </tr>
-    </thead>
-    <tbody id="logTable"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Tijd</th>
+          <th>Gebruiker</th>
+          <th>Actie</th>
+        </tr>
+      </thead>
+      <tbody id="logTable"></tbody>
+    </table>
+  </div>
 
   <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
@@ -219,6 +277,9 @@ button {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+/* -------------------------
+   SUPABASE INIT
+------------------------- */
 const client = supabase.createClient(
   "https://elmkjlqcsshctmnbqbfq.supabase.co",
   "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
