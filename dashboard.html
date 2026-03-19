@@ -23,7 +23,7 @@ header {
 }
 
 .container {
-  max-width:1100px;
+  max-width:1000px;
   margin:20px auto;
   background:white;
   padding:20px;
@@ -53,27 +53,24 @@ button {
   <div id="welcome"></div>
   <div id="calendar"></div>
 
-  <button class="logout" onclick="logout()">Logout</button>
+  <button class="logout" id="logoutBtn">Logout</button>
 </div>
 
+<!-- ✅ SCRIPTS (ELK MAAR 1 KEER!) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
 
-// ✅ SUPABASE
-const supabase = window.supabase.createClient(
-  "https://elmkjlqcsshctmnbqbfq.supabase.co",
-  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
-);
+document.addEventListener("DOMContentLoaded", async () => {
 
-let calendar;
+  // 🔥 SUPABASE (1 KEER!)
+  const supabase = window.supabase.createClient(
+    "https://elmkjlqcsshctmnbqbfq.supabase.co",
+    "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+  );
 
-// 🚀 INIT
-init();
-
-async function init() {
-
+  // 🔐 LOGIN CHECK
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -81,22 +78,18 @@ async function init() {
     return;
   }
 
-  document.getElementById("welcome").innerText = "Welkom " + user.email;
+  document.getElementById("welcome").innerText =
+    "Welkom " + user.email;
 
-  // 🔥 kalender starten NA libs geladen zijn
-  calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+  // 📅 KALENDER
+  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: 'dayGridMonth',
     locale: 'nl'
   });
 
   calendar.render();
 
-  loadEvents();
-}
-
-// 📊 EVENTS LADEN
-async function loadEvents() {
-
+  // 📊 DATA LADEN
   const { data, error } = await supabase
     .from("aanvragen")
     .select("*");
@@ -105,18 +98,18 @@ async function loadEvents() {
 
   if (error) {
     console.error(error);
+    alert("Fout bij ophalen data");
     return;
   }
 
   if (!data || data.length === 0) {
-    alert("Geen data gevonden in aanvragen tabel!");
-    return;
+    alert("Geen aanvragen gevonden!");
   }
 
   data.forEach(item => {
 
     if (!item.datum_tijd) {
-      console.warn("GEEN datum_tijd:", item);
+      console.warn("Geen datum_tijd:", item);
       return;
     }
 
@@ -126,13 +119,14 @@ async function loadEvents() {
     });
 
   });
-}
 
-// 🔥 LOGOUT (nu werkt dit zeker)
-async function logout() {
-  await supabase.auth.signOut();
-  window.location.href = "login.html";
-}
+  // 🔥 LOGOUT
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+  });
+
+});
 
 </script>
 
