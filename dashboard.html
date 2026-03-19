@@ -3,115 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard – Bezoeken</title>
-
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<title>Adminpaneel – Beheer</title>
 
 <style>
 body {
-  font-family:'Segoe UI', sans-serif;
-  margin:0;
+  font-family:'Segoe UI';
   background: linear-gradient(160deg,#ff6a00,#ffb347);
-}
-header {
-  background:#c71f1f;
-  color:white;
-  padding:15px;
-  text-align:center;
-  font-size:22px;
   display:flex;
   justify-content:center;
-  align-items:center;
-  gap:10px;
+  align-items:flex-start;
+  padding-top:40px;
+  min-height:100vh;
+  margin:0;
 }
-header span.icon {
-  font-size:26px;
-}
-.main {
-  max-width:1200px;
-  margin:20px auto;
-  padding:20px;
-  background:rgba(255,255,255,0.15);
+
+.container {
+  background: rgba(255,255,255,0.15);
   backdrop-filter:blur(10px);
+  padding:30px;
   border-radius:25px;
+  width:1100px;
+  text-align:center;
   box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
-#welcome {
-  font-size:18px;
-  margin-bottom:10px;
-  color:white;
-}
-#legend {
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-bottom:10px;
-}
-.legend-item {
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 8px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.2);
-  color:white;
-  font-size:13px;
-}
-.legend-color {
-  width:14px;
-  height:14px;
-  border-radius:50%;
-}
-#calendar {
-  margin-top:10px;
+
+h2 { color:white; margin-bottom:20px; }
+h3 { color:white; margin-top:40px; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
   background:white;
   border-radius:15px;
-  padding:10px;
+  overflow:hidden;
 }
-.section {
-  margin-top:25px;
+
+th, td {
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  font-size:15px;
 }
-.section h3 {
+
+th {
+  background:#ff6a00;
   color:white;
-  display:flex;
-  align-items:center;
-  gap:8px;
 }
-.section h3 span.icon {
-  font-size:20px;
-}
-#beschikbaarheidContainer .slot {
-  margin:5px 0;
-  background:rgba(255,255,255,0.9);
-  padding:8px 10px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:14px;
-}
+
 button {
-  padding:10px 14px;
+  padding:8px 12px;
   border:none;
-  border-radius:18px;
+  border-radius:10px;
   cursor:pointer;
-  margin-top:10px;
   font-size:14px;
 }
-.primary-btn {
+
+.btn-approve { background:green; color:white; }
+.btn-block { background:red; color:white; }
+.btn-admin { background:#444; color:white; }
+.btn-delete { background:#b30000; color:white; }
+.btn-reset { background:#0066cc; color:white; }
+.btn-add { background:#ffb347; color:#000; font-weight:bold; }
+
+.logout-btn {
+  margin-top:20px;
   background:white;
   color:#ff6a00;
   font-weight:bold;
+  padding:12px 20px;
+  border-radius:20px;
 }
-.logout-btn {
-  background:#ff6a00;
-  color:white;
-  margin-left:10px;
-}
-.logout-btn:hover,
-.primary-btn:hover {
-  transform:scale(1.03);
-}
+
+/* Modal */
 .modal {
   display:none;
   position:fixed;
@@ -120,129 +83,148 @@ button {
   background:rgba(0,0,0,0.6);
   z-index:100;
 }
+
 .modal-content {
   background:white;
   padding:20px;
-  max-width:500px;
+  max-width:400px;
   margin:80px auto;
   border-radius:15px;
 }
+
 .modal-header {
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
-.modal-header h3 {
-  margin:0;
+
+.modal-header h3 { margin:0; }
+
+.modal-body input {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  margin-top:10px;
 }
-.modal-body p {
-  margin:4px 0;
-  font-size:14px;
-}
+
 .modal-actions {
   margin-top:15px;
   display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+  gap:10px;
 }
-.btn-approve { background:green; color:white; }
-.btn-reject { background:#999; color:white; }
-.btn-swap { background:#f58231; color:white; }
+
 .btn-close { background:#555; color:white; }
 
 @media (max-width: 600px) {
-  .main { width:90%; padding:15px; }
-  #calendar { padding:5px; }
-  .modal-content { margin:40px 10px; width:auto; }
-  th, td { font-size:13px; }
+  .container { width:90%; padding:15px; }
+  table { font-size:13px; }
+  th, td { padding:8px; }
 }
 </style>
 </head>
+
 <body>
 
-<header>
-  <span class="icon">🔥</span>
-  <span>Dashboard Bezoekaanvragen</span>
-</header>
+<div class="container">
+  <h2>👨‍🚒 Adminpaneel – Volledig beheer</h2>
 
-<div class="main">
-  <div id="welcome"></div>
+  <p id="adminInfo" style="color:white;font-size:18px;"></p>
 
-  <!-- ADMIN BUTTON -->
-  <button id="adminBtn" class="primary-btn" style="display:none;" onclick="openAdmin()">
-    🛠️ Adminpaneel
-  </button>
+  <!-- DATUM TOEVOEGEN -->
+  <button class="btn-add" onclick="openDatumModal()">📅 Nieuwe datum toevoegen</button>
 
-  <div id="legend"></div>
+  <!-- GEBRUIKERS -->
+  <h3>👥 Gebruikersbeheer</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Naam</th>
+        <th>Goedgekeurd</th>
+        <th>Admin</th>
+        <th>Acties</th>
+      </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+  </table>
 
-  <div id="calendar"></div>
+  <!-- AANVRAGEN -->
+  <h3>🏫 Bezoekaanvragen beheren</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>School</th>
+        <th>Datum</th>
+        <th>Post</th>
+        <th>Status</th>
+        <th>Acties</th>
+      </tr>
+    </thead>
+    <tbody id="aanvraagTable"></tbody>
+  </table>
 
-  <div class="section">
-    <h3><span class="icon">📅</span>Geef je beschikbaarheid door</h3>
-    <div id="beschikbaarheidContainer"></div>
-    <button class="primary-btn" onclick="opslaanBeschikbaarheid()">Beschikbaarheid opslaan</button>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </div>
+  <!-- BESCHIKBAARHEID -->
+  <h3>📅 Beschikbaarheid van gebruikers</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Datum</th>
+        <th>Aanwezig</th>
+      </tr>
+    </thead>
+    <tbody id="beschikbaarheidTable"></tbody>
+  </table>
+
+  <!-- LOGS -->
+  <h3>📜 Logs</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Tijd</th>
+        <th>Gebruiker</th>
+        <th>Actie</th>
+      </tr>
+    </thead>
+    <tbody id="logTable"></tbody>
+  </table>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
-<!-- MODAL -->
-<div id="modal" class="modal">
+<!-- MODAL DATUM TOEVOEGEN -->
+<div id="datumModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Details bezoek</h3>
-      <button class="btn-close" onclick="closeModal()">X</button>
+      <h3>📅 Datum toevoegen</h3>
+      <button class="btn-close" onclick="closeDatumModal()">X</button>
     </div>
+
     <div class="modal-body">
-      <p id="details"></p>
-      <p id="bezetting"></p>
+      <label>Datum</label>
+      <input type="text" id="nieuweDatum" placeholder="bv. 12 mei 2026">
+
+      <label style="margin-top:10px;">Tijdstip</label>
+      <input type="text" id="nieuweTijd" placeholder="bv. 10:00">
     </div>
+
     <div class="modal-actions">
-      <button class="btn-approve" onclick="setBeschikbaarheid(true)">Ik ben beschikbaar</button>
-      <button class="btn-reject" onclick="setBeschikbaarheid(false)">Ik kan niet</button>
-      <button class="btn-swap" onclick="vraagRuil()">Dienst ruilen</button>
+      <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
+      <button class="btn-close" onclick="closeDatumModal()">Annuleren</button>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
-/* -------------------------
-   SUPABASE INIT
-------------------------- */
 const client = supabase.createClient(
   "https://elmkjlqcsshctmnbqbfq.supabase.co",
   "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
 );
 
 let currentUser = null;
-let selectedEvent = null;
-let checkboxes = [];
-
-/* -------------------------
-   POSTEN (7 kleuren + iconen)
-------------------------- */
-const posten = [
-  { naam: "Post 1", kleur: "#e6194b", icoon: "🚒" },
-  { naam: "Post 2", kleur: "#3cb44b", icoon: "🧯" },
-  { naam: "Post 3", kleur: "#ffe119", icoon: "🔥" },
-  { naam: "Post 4", kleur: "#4363d8", icoon: "🚨" },
-  { naam: "Post 5", kleur: "#f58231", icoon: "🏫" },
-  { naam: "Post 6", kleur: "#911eb4", icoon: "📟" },
-  { naam: "Post 7", kleur: "#46f0f0", icoon: "📞" }
-];
-
-/* -------------------------
-   KALENDER INIT
-------------------------- */
-const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-  initialView:'dayGridMonth',
-  locale:'nl',
-  height:'auto',
-  eventDisplay:'block',
-  eventClick: onEventClick
-});
 
 /* -------------------------
    ONLOAD
@@ -257,241 +239,205 @@ window.onload = async () => {
     .eq("user_id", user.id)
     .single();
 
-  if (!profile.approved) {
-    alert("Account niet goedgekeurd");
-    await client.auth.signOut();
-    window.location.href = "login.html";
+  if (!profile || !profile.is_admin) {
+    alert("Geen toegang tot adminpaneel.");
+    window.location.href = "dashboard.html";
     return;
   }
 
   currentUser = profile;
+  document.getElementById("adminInfo").innerText =
+    `Ingelogd als admin: ${profile.email}`;
 
-  document.getElementById("welcome").innerText =
-    `Welkom, ${profile.name || profile.email}!`;
+  loadUsers();
+  loadAanvragen();
+  loadBeschikbaarheid();
+  loadLogs();
 
-  if (profile.is_admin) {
-    document.getElementById("adminBtn").style.display = "inline-block";
-  }
-
-  bouwLegend();
-  laadBeschikbaarheidSlots();
-  await laadBestaandeBeschikbaarheid();
-  await loadEvents();
-  calendar.render();
-
-  /* Realtime updates */
+  /* Realtime */
   client.channel("realtime-aanvragen")
-    .on("postgres_changes", { event:"*", schema:"public", table:"aanvragen" }, loadEvents)
+    .on("postgres_changes", { event:"*", schema:"public", table:"aanvragen" }, loadAanvragen)
     .subscribe();
 
   client.channel("realtime-beschikbaarheid")
-    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbaarheid" }, () => {
-      if (selectedEvent) updateBezetting(selectedEvent);
+    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbaarheid" }, loadBeschikbaarheid)
+    .subscribe();
+
+  client.channel("realtime-datums")
+    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbare_datums" }, () => {
+      console.log("Nieuwe datum toegevoegd");
     })
     .subscribe();
 };
 
 /* -------------------------
-   LEGEND
+   GEBRUIKERS
 ------------------------- */
-function bouwLegend() {
-  const legend = document.getElementById("legend");
-  legend.innerHTML = "";
-  posten.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "legend-item";
-    const color = document.createElement("div");
-    color.className = "legend-color";
-    color.style.background = p.kleur;
-    div.appendChild(color);
-    div.append(`${p.icoon} ${p.naam}`);
-    legend.appendChild(div);
+async function loadUsers() {
+  const { data: users } = await client.from("profiles").select("*").order("email");
+  const table = document.getElementById("userTable");
+  table.innerHTML = "";
+
+  users.forEach(u => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${u.email}</td>
+      <td>${u.name || "-"}</td>
+      <td>${u.approved ? "✔️" : "❌"}</td>
+      <td>${u.is_admin ? "✔️" : "❌"}</td>
+      <td>
+        <button class="btn-approve" onclick="approveUser('${u.user_id}')">Goedkeuren</button>
+        <button class="btn-block" onclick="blockUser('${u.user_id}')">Blokkeren</button>
+        <button class="btn-admin" onclick="toggleAdmin('${u.user_id}', ${u.is_admin})">Admin</button>
+        <button class="btn-reset" onclick="resetPassword('${u.email}')">Reset wachtwoord</button>
+        <button class="btn-delete" onclick="deleteUser('${u.user_id}')">Verwijderen</button>
+      </td>
+    `;
+
+    table.appendChild(row);
   });
 }
 
+async function approveUser(id) {
+  await client.from("profiles").update({ approved: true }).eq("user_id", id);
+  loadUsers();
+}
+
+async function blockUser(id) {
+  await client.from("profiles").update({ approved: false }).eq("user_id", id);
+  loadUsers();
+}
+
+async function toggleAdmin(id, isAdmin) {
+  await client.from("profiles").update({ is_admin: !isAdmin }).eq("user_id", id);
+  loadUsers();
+}
+
+async function resetPassword(email) {
+  await client.auth.resetPasswordForEmail(email);
+  alert("Resetmail verzonden!");
+}
+
+async function deleteUser(id) {
+  await client.from("profiles").delete().eq("user_id", id);
+  loadUsers();
+}
+
 /* -------------------------
-   EVENTS LADEN
+   AANVRAGEN
 ------------------------- */
-async function loadEvents() {
+async function loadAanvragen() {
   const { data } = await client.from("aanvragen").select("*");
-  calendar.removeAllEvents();
+  const table = document.getElementById("aanvraagTable");
+  table.innerHTML = "";
 
-  data.forEach(item => {
-    const [datum, tijd] = item.datum.split(" - ");
-    const iso = convertToISO(datum) + "T" + tijd;
+  const posten = [
+    "Post Balen", "Post Geel", "Post Grobbendonk",
+    "Post Herentals", "Post Herenthout", "Post Mol", "Post Westerlo"
+  ];
 
-    const post = posten[(item.post_nummer || 1) - 1];
+  data.forEach(a => {
+    const row = document.createElement("tr");
 
-    calendar.addEvent({
-      title: `${post.icoon} ${item.school}`,
-      start: iso,
-      color: post.kleur,
-      extendedProps: { ...item, postNaam: post.naam, postIcoon: post.icoon }
-    });
+    row.innerHTML = `
+      <td>${a.school}</td>
+      <td>${a.datum}</td>
+      <td>${posten[(a.post_nummer || 1) - 1]}</td>
+      <td>${a.status}</td>
+      <td>
+        <button class="btn-approve" onclick="setStatus(${a.id}, 'Goedgekeurd')">Goedkeuren</button>
+        <button class="btn-block" onclick="setStatus(${a.id}, 'Afgekeurd')">Afkeuren</button>
+      </td>
+    `;
+
+    table.appendChild(row);
   });
 }
 
-function convertToISO(d) {
-  const maanden = {
-    januari:"01", februari:"02", maart:"03", april:"04",
-    mei:"05", juni:"06", juli:"07", augustus:"08",
-    september:"09", oktober:"10", november:"11", december:"12"
-  };
-  const parts = d.split(" ");
-  return `${parts[2]}-${maanden[parts[1]]}-${parts[0].padStart(2,'0')}`;
-}
-
-/* -------------------------
-   EVENT CLICK
-------------------------- */
-async function onEventClick(info) {
-  selectedEvent = info.event.extendedProps;
-
-  document.getElementById("details").innerHTML = `
-    <b>${selectedEvent.postIcoon} ${selectedEvent.postNaam}</b><br>
-    <b>School:</b> ${selectedEvent.school}<br>
-    <b>Datum:</b> ${selectedEvent.datum}<br>
-    <b>Begeleider:</b> ${selectedEvent.begeleider || "-"}<br>
-    <b>Email:</b> ${selectedEvent.email || "-"}<br>
-    <b>GSM:</b> ${selectedEvent.gsm || "-"}<br>
-    <b>Status:</b> ${selectedEvent.status || "-"}
-  `;
-
-  await updateBezetting(selectedEvent);
-  document.getElementById("modal").style.display = "block";
-}
-
-async function updateBezetting(ev) {
-  const { data } = await client
-    .from("beschikbaarheid")
-    .select("*")
-    .eq("datum", ev.datum);
-
-  const nodig = 2;
-  const aanwezig = data.filter(b => b.aanwezig);
-  const tekort = Math.max(0, nodig - aanwezig.length);
-
-  const lijst = aanwezig.length
-    ? aanwezig.map(b => `${b.user_email}`).join("<br>")
-    : "Nog niemand";
-
-  document.getElementById("bezetting").innerHTML = `
-    <b>Ingeschreven begeleiders (${aanwezig.length}/${nodig}):</b><br>
-    ${lijst}<br>
-    ${tekort > 0 ? `<span style="color:#c71f1f;">Nog ${tekort} nodig</span>` : `<span style="color:green;">Volledig bemand</span>`}
-  `;
-}
-
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
-  selectedEvent = null;
+async function setStatus(id, status) {
+  await client.from("aanvragen").update({ status }).eq("id", id);
+  loadAanvragen();
 }
 
 /* -------------------------
    BESCHIKBAARHEID
 ------------------------- */
-async function setBeschikbaarheid(aanwezig) {
-  if (!selectedEvent) return;
+async function loadBeschikbaarheid() {
+  const { data } = await client.from("beschikbaarheid").select("*");
+  const table = document.getElementById("beschikbaarheidTable");
+  table.innerHTML = "";
 
-  await client
-    .from("beschikbaarheid")
-    .delete()
-    .eq("user_email", currentUser.email)
-    .eq("datum", selectedEvent.datum);
+  data.forEach(b => {
+    const row = document.createElement("tr");
 
-  await client.from("beschikbaarheid").insert([{
-    user_email: currentUser.email,
-    datum: selectedEvent.datum,
-    aanwezig,
-    ruil_gevraagd: false
-  }]);
+    row.innerHTML = `
+      <td>${b.user_email}</td>
+      <td>${b.datum}</td>
+      <td>${b.aanwezig ? "✔️" : "❌"}</td>
+    `;
 
-  alert(aanwezig ? "Je hebt je beschikbaar gesteld." : "Je bent niet beschikbaar.");
-  await updateBezetting(selectedEvent);
-}
-
-async function vraagRuil() {
-  await client
-    .from("beschikbaarheid")
-    .update({ ruil_gevraagd: true })
-    .eq("user_email", currentUser.email)
-    .eq("datum", selectedEvent.datum);
-
-  alert("Je hebt een ruil aangevraagd.");
-}
-
-/* -------------------------
-   BESCHIKBAARHEIDSLIJST
-------------------------- */
-const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
-const tijden = ["10:00","13:30"];
-
-function laadBeschikbaarheidSlots() {
-  const container = document.getElementById("beschikbaarheidContainer");
-  container.innerHTML = "";
-  checkboxes = [];
-
-  datums.forEach(d => tijden.forEach(t => {
-    const key = d + " - " + t;
-    const div = document.createElement("div");
-    div.className = "slot";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.value = key;
-
-    const label = document.createElement("span");
-    label.textContent = `📅 ${key}`;
-
-    checkboxes.push(cb);
-    div.appendChild(cb);
-    div.appendChild(label);
-    container.appendChild(div);
-  }));
-}
-
-async function laadBestaandeBeschikbaarheid() {
-  const { data } = await client
-    .from("beschikbaarheid")
-    .select("*")
-    .eq("user_email", currentUser.email);
-
-  checkboxes.forEach(cb => {
-    if (data.some(d => d.datum === cb.value && d.aanwezig)) {
-      cb.checked = true;
-    }
+    table.appendChild(row);
   });
 }
 
-async function opslaanBeschikbaarheid() {
-  await client
-    .from("beschikbaarheid")
-    .delete()
-    .eq("user_email", currentUser.email);
+/* -------------------------
+   LOGGING
+------------------------- */
+async function loadLogs() {
+  const { data } = await client.from("logs").select("*").order("id", { ascending:false });
+  const table = document.getElementById("logTable");
+  table.innerHTML = "";
 
-  const inserts = checkboxes
-    .filter(cb => cb.checked)
-    .map(cb => ({
-      user_email: currentUser.email,
-      datum: cb.value,
-      aanwezig: true,
-      ruil_gevraagd: false
-    }));
+  data.forEach(l => {
+    const row = document.createElement("tr");
 
-  if (inserts.length > 0) {
-    await client.from("beschikbaarheid").insert(inserts);
-  }
+    row.innerHTML = `
+      <td>${l.created_at}</td>
+      <td>${l.user}</td>
+      <td>${l.actie}</td>
+    `;
 
-  alert("Beschikbaarheid opgeslagen.");
+    table.appendChild(row);
+  });
 }
 
 /* -------------------------
-   ADMIN + LOGOUT
+   DATUM TOEVOEGEN
 ------------------------- */
-function openAdmin() {
-  window.location.href = "admin.html";
+function openDatumModal() {
+  document.getElementById("datumModal").style.display = "block";
 }
 
+function closeDatumModal() {
+  document.getElementById("datumModal").style.display = "none";
+}
+
+async function opslaanDatum() {
+  const datum = document.getElementById("nieuweDatum").value.trim();
+  const tijd = document.getElementById("nieuweTijd").value.trim();
+
+  if (!datum || !tijd) {
+    alert("Vul zowel datum als tijd in.");
+    return;
+  }
+
+  const { error } = await client
+    .from("beschikbare_datums")
+    .insert([{ datum, tijd }]);
+
+  if (error) {
+    alert("Fout bij opslaan: " + error.message);
+    return;
+  }
+
+  alert("Datum toegevoegd!");
+  closeDatumModal();
+}
+
+/* -------------------------
+   LOGOUT
+------------------------- */
 async function logout() {
   await client.auth.signOut();
   window.location.href = "login.html";
