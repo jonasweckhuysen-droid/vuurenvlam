@@ -131,7 +131,7 @@
         <input type="number" id="aantal" required>
       </div>
 
-      <!-- 🔥 NIEUWE POST-SELECTIE -->
+      <!-- 🔥 POST-SELECTIE -->
       <div class="input-group">
         <label>🚒 Kies een brandweerpost</label>
         <select id="postSelect" required>
@@ -146,6 +146,7 @@
         </select>
       </div>
 
+      <!-- 🔥 DYNAMISCHE DATUMS -->
       <div class="input-group">
         <label>📆 Kies een datum</label>
         <select id="datumSelect" required>
@@ -175,49 +176,53 @@ document.addEventListener("DOMContentLoaded", function () {
   const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  const beschikbareDatums = [
-    "10 april 2026",
-    "15 april 2026",
-    "22 april 2026",
-    "5 mei 2026"
-  ];
-
-  const tijdsblokken = ["10:00", "13:30"];
   const select = document.getElementById("datumSelect");
 
+  // 🔥 DYNAMISCHE DATUMS LADEN
   async function laadBeschikbareSlots() {
-    const { data, error } = await supabase
-      .from("aanvragen")
-      .select("datum");
 
-    if (error) {
-      console.error(error);
+    // 1. Haal alle beschikbare datums op
+    const { data: datums, error: err1 } = await supabase
+      .from("beschikbare_datums")
+      .select("*");
+
+    if (err1) {
+      console.error(err1);
       return;
     }
 
-    const bezet = data.map(item => item.datum);
+    // 2. Haal alle reeds ingenomen slots op
+    const { data: bezetData, error: err2 } = await supabase
+      .from("aanvragen")
+      .select("datum");
 
+    if (err2) {
+      console.error(err2);
+      return;
+    }
+
+    const ingenomen = bezetData.map(b => b.datum);
+
+    // 3. Dropdown leegmaken
     select.innerHTML = '<option value="">-- Kies datum & uur --</option>';
 
-    beschikbareDatums.forEach(datum => {
-      tijdsblokken.forEach(tijd => {
+    // 4. Beschikbare datums tonen
+    datums.forEach(item => {
+      const key = item.datum + " - " + item.tijd;
 
-        const key = datum + " - " + tijd;
+      if (ingenomen.includes(key)) return;
 
-        if (bezet.includes(key)) return;
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = `🔥 ${item.datum} om ${item.tijd}`;
 
-        const option = document.createElement("option");
-        option.value = key;
-        option.textContent = "🔥 " + datum + " om " + tijd;
-
-        select.appendChild(option);
-
-      });
+      select.appendChild(option);
     });
   }
 
   laadBeschikbareSlots();
 
+  // 🔥 FORM SUBMIT
   document.getElementById("aanvraagForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
@@ -232,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
       status: "nieuw"
     };
 
+    // 🔴 EXTRA CHECK TEGEN DUBBEL BOEKEN
     const { data: bestaande } = await supabase
       .from("aanvragen")
       .select("id")
