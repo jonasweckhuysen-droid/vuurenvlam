@@ -63,6 +63,7 @@ button {
 .btn-admin { background:#444; color:white; }
 .btn-delete { background:#b30000; color:white; }
 .btn-reset { background:#0066cc; color:white; }
+.btn-add { background:#ffb347; color:#000; font-weight:bold; }
 
 .logout-btn {
   margin-top:20px;
@@ -72,18 +73,66 @@ button {
   padding:12px 20px;
   border-radius:20px;
 }
+
+/* Modal */
+.modal {
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.6);
+  z-index:100;
+}
+
+.modal-content {
+  background:white;
+  padding:20px;
+  max-width:400px;
+  margin:80px auto;
+  border-radius:15px;
+}
+
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.modal-header h3 { margin:0; }
+
+.modal-body input {
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  margin-top:10px;
+}
+
+.modal-actions {
+  margin-top:15px;
+  display:flex;
+  gap:10px;
+}
+
+.btn-close { background:#555; color:white; }
+
+@media (max-width: 600px) {
+  .container { width:90%; padding:15px; }
+  table { font-size:13px; }
+  th, td { padding:8px; }
+}
 </style>
 </head>
 
 <body>
-<button class="primary-btn" onclick="openDatumModal()" style="margin-bottom:20px;">
-  📅 Nieuwe datum toevoegen
-</button>
 
 <div class="container">
   <h2>👨‍🚒 Adminpaneel – Volledig beheer</h2>
 
   <p id="adminInfo" style="color:white;font-size:18px;"></p>
+
+  <!-- DATUM TOEVOEGEN -->
+  <button class="btn-add" onclick="openDatumModal()">📅 Nieuwe datum toevoegen</button>
 
   <!-- GEBRUIKERS -->
   <h3>👥 Gebruikersbeheer</h3>
@@ -107,6 +156,7 @@ button {
       <tr>
         <th>School</th>
         <th>Datum</th>
+        <th>Post</th>
         <th>Status</th>
         <th>Acties</th>
       </tr>
@@ -143,6 +193,29 @@ button {
   <button class="logout-btn" onclick="logout()">Logout</button>
 </div>
 
+<!-- MODAL DATUM TOEVOEGEN -->
+<div id="datumModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📅 Datum toevoegen</h3>
+      <button class="btn-close" onclick="closeDatumModal()">X</button>
+    </div>
+
+    <div class="modal-body">
+      <label>Datum</label>
+      <input type="text" id="nieuweDatum" placeholder="bv. 12 mei 2026">
+
+      <label style="margin-top:10px;">Tijdstip</label>
+      <input type="text" id="nieuweTijd" placeholder="bv. 10:00">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
+      <button class="btn-close" onclick="closeDatumModal()">Annuleren</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -153,6 +226,9 @@ const client = supabase.createClient(
 
 let currentUser = null;
 
+/* -------------------------
+   ONLOAD
+------------------------- */
 window.onload = async () => {
   const { data: { user } } = await client.auth.getUser();
   if (!user) { window.location.href = "login.html"; return; }
@@ -177,6 +253,21 @@ window.onload = async () => {
   loadAanvragen();
   loadBeschikbaarheid();
   loadLogs();
+
+  /* Realtime */
+  client.channel("realtime-aanvragen")
+    .on("postgres_changes", { event:"*", schema:"public", table:"aanvragen" }, loadAanvragen)
+    .subscribe();
+
+  client.channel("realtime-beschikbaarheid")
+    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbaarheid" }, loadBeschikbaarheid)
+    .subscribe();
+
+  client.channel("realtime-datums")
+    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbare_datums" }, () => {
+      console.log("Nieuwe datum toegevoegd");
+    })
+    .subscribe();
 };
 
 /* -------------------------
@@ -210,31 +301,26 @@ async function loadUsers() {
 
 async function approveUser(id) {
   await client.from("profiles").update({ approved: true }).eq("user_id", id);
-  log("Gebruiker goedgekeurd");
   loadUsers();
 }
 
 async function blockUser(id) {
   await client.from("profiles").update({ approved: false }).eq("user_id", id);
-  log("Gebruiker geblokkeerd");
   loadUsers();
 }
 
 async function toggleAdmin(id, isAdmin) {
   await client.from("profiles").update({ is_admin: !isAdmin }).eq("user_id", id);
-  log("Adminrechten aangepast");
   loadUsers();
 }
 
 async function resetPassword(email) {
   await client.auth.resetPasswordForEmail(email);
   alert("Resetmail verzonden!");
-  log("Wachtwoord reset aangevraagd");
 }
 
 async function deleteUser(id) {
   await client.from("profiles").delete().eq("user_id", id);
-  log("Gebruiker verwijderd");
   loadUsers();
 }
 
@@ -246,12 +332,18 @@ async function loadAanvragen() {
   const table = document.getElementById("aanvraagTable");
   table.innerHTML = "";
 
+  const posten = [
+    "Post Balen", "Post Geel", "Post Grobbendonk",
+    "Post Herentals", "Post Herenthout", "Post Mol", "Post Westerlo"
+  ];
+
   data.forEach(a => {
     const row = document.createElement("tr");
 
     row.innerHTML = `
       <td>${a.school}</td>
       <td>${a.datum}</td>
+      <td>${posten[(a.post_nummer || 1) - 1]}</td>
       <td>${a.status}</td>
       <td>
         <button class="btn-approve" onclick="setStatus(${a.id}, 'Goedgekeurd')">Goedkeuren</button>
@@ -265,7 +357,6 @@ async function loadAanvragen() {
 
 async function setStatus(id, status) {
   await client.from("aanvragen").update({ status }).eq("id", id);
-  log("Aanvraagstatus aangepast");
   loadAanvragen();
 }
 
@@ -293,14 +384,8 @@ async function loadBeschikbaarheid() {
 /* -------------------------
    LOGGING
 ------------------------- */
-async function log(action) {
-  await client.from("logs").insert([
-    { user: currentUser.email, actie: action }
-  ]);
-}
-
 async function loadLogs() {
-  const { data } = await client.from("logs").select("*").order("id", { ascending: false });
+  const { data } = await client.from("logs").select("*").order("id", { ascending:false });
   const table = document.getElementById("logTable");
   table.innerHTML = "";
 
@@ -315,6 +400,39 @@ async function loadLogs() {
 
     table.appendChild(row);
   });
+}
+
+/* -------------------------
+   DATUM TOEVOEGEN
+------------------------- */
+function openDatumModal() {
+  document.getElementById("datumModal").style.display = "block";
+}
+
+function closeDatumModal() {
+  document.getElementById("datumModal").style.display = "none";
+}
+
+async function opslaanDatum() {
+  const datum = document.getElementById("nieuweDatum").value.trim();
+  const tijd = document.getElementById("nieuweTijd").value.trim();
+
+  if (!datum || !tijd) {
+    alert("Vul zowel datum als tijd in.");
+    return;
+  }
+
+  const { error } = await client
+    .from("beschikbare_datums")
+    .insert([{ datum, tijd }]);
+
+  if (error) {
+    alert("Fout bij opslaan: " + error.message);
+    return;
+  }
+
+  alert("Datum toegevoegd!");
+  closeDatumModal();
 }
 
 /* -------------------------
