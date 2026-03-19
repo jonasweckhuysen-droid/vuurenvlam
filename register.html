@@ -77,7 +77,7 @@ p { color:white; margin-top:15px; }
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  const supabase = window.supabase.createClient(
+  const client = window.supabase.createClient(
     "https://elmkjlqcsshctmnbqbfq.supabase.co",
     "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
   );
@@ -93,28 +93,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 🔐 Account aanmaken
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await client.auth.signUp({
       email,
       password
     });
-
-    console.log("REGISTER:", data, error);
 
     if (error) {
       alert("Fout bij registratie: " + error.message);
       return;
     }
 
-    // 🔥 EXTRA CHECK (belangrijk!)
-    if (!data.user) {
-      alert("Registratie gelukt, maar user niet ontvangen. Controleer Supabase instellingen.");
+    // 🔥 User ID ophalen via getUser()
+    const { data: userData } = await client.auth.getUser();
+
+    if (!userData.user) {
+      alert("Registratie gelukt! Controleer je email om te bevestigen.");
       return;
     }
 
     // 👤 Profiel aanmaken
-    const { error: profileError } = await supabase.from("profiles").insert([
+    const { error: profileError } = await client.from("profiles").insert([
       {
-        user_id: data.user.id,
+        user_id: userData.user.id,
         email: email,
         approved: true,
         is_admin: false
@@ -133,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
+
 
 </body>
 </html>
