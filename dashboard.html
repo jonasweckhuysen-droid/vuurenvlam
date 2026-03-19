@@ -10,7 +10,7 @@
 <style>
 body {
   margin:0;
-  font-family:'Segoe UI',sans-serif;
+  font-family:'Segoe UI';
   background: linear-gradient(160deg,#ff6a00,#ffb347);
 }
 
@@ -20,7 +20,6 @@ header {
   padding:20px;
   text-align:center;
   font-size:22px;
-  font-weight:bold;
 }
 
 .container {
@@ -98,13 +97,12 @@ button {
   </div>
 </div>
 
-<!-- ✅ SLECHTS 1x SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
-<!-- ✅ SLECHTS 1 SCRIPT -->
 <script>
 
-// 🔥 SUPABASE (NOOIT MEER DAN 1 KEER!)
+// 🔥 SUPABASE
 const supabase = window.supabase.createClient(
   "https://elmkjlqcsshctmnbqbfq.supabase.co",
   "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
@@ -114,43 +112,31 @@ let user = null;
 let selectedId = null;
 let checkboxes = [];
 
-// 🔐 LOGIN CHECK
+// 🔐 INIT
 init();
 
 async function init() {
 
-  const res = await supabase.auth.getUser();
-  user = res.data.user;
+  const { data: { user: u } } = await supabase.auth.getUser();
+  if (!u) return window.location.href = "login.html";
 
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+  user = u;
 
-  // profiel ophalen
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("user_id", user.id)
     .single();
 
-  if (!profile) {
-    alert("Geen profiel gevonden");
-    return;
-  }
-
   if (!profile.approved) {
     alert("Nog niet goedgekeurd!");
     await supabase.auth.signOut();
-    window.location.href = "login.html";
-    return;
+    return window.location.href = "login.html";
   }
 
-  // welkom tekst
   document.getElementById("welcome").innerText =
     "Welkom, " + (profile.name || profile.email);
 
-  // admin knoppen
   if (!profile.is_admin) {
     document.getElementById("approveBtn").style.display = "none";
     document.getElementById("rejectBtn").style.display = "none";
@@ -160,18 +146,21 @@ async function init() {
   loadSlots();
 }
 
-// 🔥 KALENDER
+// 📅 KALENDER
 function loadCalendar() {
 
   const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: 'dayGridMonth',
     locale: 'nl',
 
-    eventClick: async function(info) {
+    eventClick: function(info) {
+
       selectedId = info.event.extendedProps.id;
 
-      document.getElementById("details").innerHTML =
-        "School: " + info.event.extendedProps.school;
+      document.getElementById("details").innerHTML = `
+        <b>School:</b> ${info.event.extendedProps.school}<br>
+        <b>Status:</b> ${info.event.extendedProps.status}
+      `;
 
       document.getElementById("modal").style.display = "block";
     }
@@ -182,37 +171,34 @@ function loadCalendar() {
   loadEvents(calendar);
 }
 
-// 🔥 EVENTS
+// 📊 EVENTS LADEN (NU CORRECT!)
 async function loadEvents(calendar) {
 
-  const { data } = await supabase.from("aanvragen").select("*");
+  const { data, error } = await supabase
+    .from("aanvragen")
+    .select("*");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  console.log("Aanvragen:", data);
 
   data.forEach(item => {
 
-    let parts = item.datum.split(" - ");
-    let iso = toISO(parts[0]) + "T" + parts[1];
+    if (!item.datum_tijd) return;
 
     calendar.addEvent({
       title: item.school,
-      start: iso,
-      color: item.status === "goedgekeurd" ? "green" :
-             item.status === "geweigerd" ? "red" : "orange",
+      start: item.datum_tijd, // 🔥 DIRECT!
+      color:
+        item.status === "goedgekeurd" ? "green" :
+        item.status === "geweigerd" ? "red" : "orange",
       extendedProps: item
     });
+
   });
-}
-
-// 🔥 DATUM
-function toISO(datum) {
-
-  const m = {
-    januari:"01", februari:"02", maart:"03", april:"04",
-    mei:"05", juni:"06", juli:"07", augustus:"08",
-    september:"09", oktober:"10", november:"11", december:"12"
-  };
-
-  let p = datum.split(" ");
-  return `${p[2]}-${m[p[1]]}-${p[0].padStart(2,'0')}`;
 }
 
 // 🔥 MODAL
@@ -225,36 +211,39 @@ document.getElementById("approveBtn").onclick = () => updateStatus("goedgekeurd"
 document.getElementById("rejectBtn").onclick = () => updateStatus("geweigerd");
 
 async function updateStatus(status) {
-  await supabase.from("aanvragen").update({status}).eq("id", selectedId);
+  await supabase.from("aanvragen")
+    .update({ status })
+    .eq("id", selectedId);
+
   location.reload();
 }
 
 // 🔥 BESCHIKBAARHEID
 function loadSlots() {
 
-  const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
-  const tijden = ["10:00","13:30"];
+  const datums = [
+    "2026-04-10 10:00:00",
+    "2026-04-10 13:30:00",
+    "2026-04-15 10:00:00",
+    "2026-04-15 13:30:00"
+  ];
 
   const container = document.getElementById("slots");
 
   datums.forEach(d => {
-    tijden.forEach(t => {
 
-      const key = d + " - " + t;
+    const div = document.createElement("div");
 
-      const div = document.createElement("div");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = d;
 
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.value = key;
+    checkboxes.push(cb);
 
-      checkboxes.push(cb);
+    div.appendChild(cb);
+    div.append(" " + new Date(d).toLocaleString());
 
-      div.appendChild(cb);
-      div.append(" " + key);
-
-      container.appendChild(div);
-    });
+    container.appendChild(div);
   });
 }
 
@@ -277,7 +266,7 @@ async function saveAvailability() {
     await supabase.from("beschikbaarheid").insert(inserts);
   }
 
-  alert("Opgeslagen!");
+  alert("✅ Opgeslagen!");
 }
 
 // logout
@@ -287,8 +276,6 @@ async function logout() {
 }
 
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 </body>
 </html>
