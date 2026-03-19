@@ -3,77 +3,234 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - Bezoeken</title>
+<title>Dashboard – Bezoeken</title>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
 
 <style>
-body { font-family:'Segoe UI', sans-serif; margin:0; background:#f4f4f4; }
-header { background:#c71f1f; color:white; padding:15px; text-align:center; font-size:22px; }
-.container { max-width:1100px; margin:20px auto; padding:20px; background:white; border-radius:15px; }
-#welcome { font-size:18px; margin-bottom:15px; }
-#calendar { margin-top:20px; }
-.slot { margin:5px 0; }
-#beschikbaarheidContainer { margin-top:20px; }
-button { padding:10px; border:none; border-radius:8px; cursor:pointer; margin-top:10px; }
-.logout-btn { background:#ff6a00; color:white; margin-top:15px; }
-.logout-btn:hover { transform:scale(1.03); }
+body {
+  font-family:'Segoe UI', sans-serif;
+  margin:0;
+  background: linear-gradient(160deg,#ff6a00,#ffb347);
+}
+header {
+  background:#c71f1f;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:22px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+}
+header span.icon {
+  font-size:26px;
+}
+.main {
+  max-width:1200px;
+  margin:20px auto;
+  padding:20px;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(10px);
+  border-radius:25px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+#welcome {
+  font-size:18px;
+  margin-bottom:10px;
+  color:white;
+}
+#legend {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:10px;
+}
+.legend-item {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 8px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.2);
+  color:white;
+  font-size:13px;
+}
+.legend-color {
+  width:14px;
+  height:14px;
+  border-radius:50%;
+}
+#calendar {
+  margin-top:10px;
+  background:white;
+  border-radius:15px;
+  padding:10px;
+}
+.section {
+  margin-top:25px;
+}
+.section h3 {
+  color:white;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section h3 span.icon {
+  font-size:20px;
+}
+#beschikbaarheidContainer .slot {
+  margin:5px 0;
+  background:rgba(255,255,255,0.9);
+  padding:8px 10px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+}
+button {
+  padding:10px 14px;
+  border:none;
+  border-radius:18px;
+  cursor:pointer;
+  margin-top:10px;
+  font-size:14px;
+}
+.primary-btn {
+  background:white;
+  color:#ff6a00;
+  font-weight:bold;
+}
+.logout-btn {
+  background:#ff6a00;
+  color:white;
+  margin-left:10px;
+}
+.logout-btn:hover,
+.primary-btn:hover {
+  transform:scale(1.03);
+}
+.modal {
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.6);
+  z-index:100;
+}
+.modal-content {
+  background:white;
+  padding:20px;
+  max-width:500px;
+  margin:80px auto;
+  border-radius:15px;
+}
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.modal-header h3 {
+  margin:0;
+}
+.modal-body p {
+  margin:4px 0;
+  font-size:14px;
+}
+.modal-actions {
+  margin-top:15px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
 .btn-approve { background:green; color:white; }
-.btn-reject { background:red; color:white; }
-.btn-close { background:gray; color:white; }
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; }
-.modal-content { background:white; padding:20px; max-width:500px; margin:100px auto; border-radius:10px; }
+.btn-reject { background:#999; color:white; }
+.btn-swap { background:#f58231; color:white; }
+.btn-close { background:#555; color:white; }
+
+@media (max-width: 600px) {
+  .main { width:90%; padding:15px; }
+  #calendar { padding:5px; }
+  .modal-content { margin:40px 10px; width:auto; }
+  th, td { font-size:13px; }
+}
 </style>
 </head>
 <body>
 
-<header>🔥 Dashboard Bezoekaanvragen</header>
+<header>
+  <span class="icon">🔥</span>
+  <span>Dashboard Bezoekaanvragen</span>
+</header>
 
-<div class="container">
+<div class="main">
   <div id="welcome"></div>
+
+  <div id="legend"></div>
+
   <div id="calendar"></div>
 
-  <h3>👨‍🚒 Geef je beschikbaarheid door</h3>
-  <div id="beschikbaarheidContainer"></div>
-  <button onclick="opslaanBeschikbaarheid()">Opslaan Beschikbaarheid</button>
-  <button class="logout-btn" onclick="logout()">Logout</button>
+  <div class="section">
+    <h3><span class="icon">📅</span>Geef je beschikbaarheid door</h3>
+    <div id="beschikbaarheidContainer"></div>
+    <button class="primary-btn" onclick="opslaanBeschikbaarheid()">Beschikbaarheid opslaan</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 </div>
 
 <div id="modal" class="modal">
   <div class="modal-content">
-    <h3>Details aanvraag</h3>
-    <p id="details"></p>
-    <button class="btn-approve" onclick="setBeschikbaarheid(true)">Beschikbaar</button>
-    <button class="btn-reject" onclick="setBeschikbaarheid(false)">Vervanger zoeken</button>
-    <button class="btn-close" onclick="closeModal()">Sluiten</button>
+    <div class="modal-header">
+      <h3>Details bezoek</h3>
+      <button class="btn-close" onclick="closeModal()">X</button>
+    </div>
+    <div class="modal-body">
+      <p id="details"></p>
+      <p id="bezetting"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-approve" onclick="setBeschikbaarheid(true)">Ik ben beschikbaar</button>
+      <button class="btn-reject" onclick="setBeschikbaarheid(false)">Ik kan niet</button>
+      <button class="btn-swap" onclick="vraagRuil()">Dienst ruilen</button>
+    </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
-/* -------------------------
-   SUPABASE INITIALISATIE
-------------------------- */
 const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
 const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-/* -------------------------
-   VARIABELEN
-------------------------- */
 let currentUser = null;
 let selectedEvent = null;
 let checkboxes = [];
 
+const posten = [
+  { naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
+  { naam: "Post Geel", kleur: "#3cb44b", icoon: "🧯" },
+  { naam: "Post Grobbendonk", kleur: "#ffe119", icoon: "🔥" },
+  { naam: "Post Herentals", kleur: "#4363d8", icoon: "🚨" },
+  { naam: "Post Herenthout", kleur: "#f58231", icoon: "🏫" },
+  { naam: "Post Mol", kleur: "#911eb4", icoon: "📟" },
+  { naam: "Post Westerlo", kleur: "#46f0f0", icoon: "📞" }
+];
+
 const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
 const tijden = ["10:00","13:30"];
-const kleuren = ["#e6194b","#3cb44b","#ffe119","#4363d8","#f58231","#911eb4","#46f0f0"];
 
-/* -------------------------
-   INIT
-------------------------- */
+const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+  initialView:'dayGridMonth',
+  locale:'nl',
+  height:'auto',
+  eventDisplay:'block',
+  eventClick: onEventClick
+});
+
 window.onload = async () => {
   const { data: { user } } = await client.auth.getUser();
   if (!user) { window.location.href = "login.html"; return; }
@@ -95,99 +252,151 @@ window.onload = async () => {
   document.getElementById("welcome").innerText =
     `Welkom, ${profile.name || profile.email}!`;
 
+  bouwLegend();
   laadBeschikbaarheidSlots();
   await laadBestaandeBeschikbaarheid();
   await loadEvents();
   calendar.render();
+
+  // Realtime updates
+  client.channel("realtime-aanvragen")
+    .on("postgres_changes", { event:"*", schema:"public", table:"aanvragen" }, loadEvents)
+    .subscribe();
+
+  client.channel("realtime-beschikbaarheid")
+    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbaarheid" }, () => {
+      if (selectedEvent) updateBezetting(selectedEvent);
+    })
+    .subscribe();
 };
 
-/* -------------------------
-   FULLCALENDAR
-------------------------- */
-const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-  initialView: 'dayGridMonth',
-  locale: 'nl',
-  eventClick: async (info) => {
-    selectedEvent = info.event.extendedProps;
+function bouwLegend() {
+  const legend = document.getElementById("legend");
+  legend.innerHTML = "";
+  posten.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "legend-item";
+    const color = document.createElement("div");
+    color.className = "legend-color";
+    color.style.background = p.kleur;
+    div.appendChild(color);
+    div.append(`${p.icoon} ${p.naam}`);
+    legend.appendChild(div);
+  });
+}
 
-    const { data: beschikbaar } = await client
-      .from("beschikbaarheid")
-      .select("*")
-      .eq("datum", selectedEvent.datum);
-
-    const lijst = beschikbaar.length > 0
-      ? beschikbaar.map(b => `${b.user_email} (${b.aanwezig ? "✔️" : "❌"})`).join("<br>")
-      : "Niemand";
-
-    document.getElementById("details").innerHTML = `
-      <b>School:</b> ${selectedEvent.school}<br>
-      <b>Begeleider:</b> ${selectedEvent.begeleider}<br>
-      <b>Email:</b> ${selectedEvent.email}<br>
-      <b>GSM:</b> ${selectedEvent.gsm}<br>
-      <b>Status:</b> ${selectedEvent.status}<br>
-      <b>Beschikbaar:</b><br>${lijst}
-    `;
-
-    document.getElementById("modal").style.display = "block";
-  }
-});
-
-/* -------------------------
-   EVENTS LADEN
-------------------------- */
 async function loadEvents() {
   const { data, error } = await client.from("aanvragen").select("*");
   if (error) { console.error(error); return; }
 
+  calendar.removeAllEvents();
+
   data.forEach((item, i) => {
     const [datum, tijd] = item.datum.split(" - ");
     const iso = convertToISO(datum) + "T" + tijd;
+    const postIndex = (item.post_nummer || 1) - 1;
+    const post = posten[postIndex] || posten[0];
 
     calendar.addEvent({
-      title: item.school,
+      title: `${post.icoon} ${item.school}`,
       start: iso,
-      color: kleuren[i % kleuren.length],
-      extendedProps: item
+      color: post.kleur,
+      extendedProps: {
+        ...item,
+        postNaam: post.naam,
+        postIcoon: post.icoon
+      }
     });
   });
 }
 
-/* -------------------------
-   DATUM CONVERSIE
-------------------------- */
 function convertToISO(d) {
   const maanden = {
-    januari: "01", februari: "02", maart: "03", april: "04",
-    mei: "05", juni: "06", juli: "07", augustus: "08",
-    september: "09", oktober: "10", november: "11", december: "12"
+    januari:"01", februari:"02", maart:"03", april:"04",
+    mei:"05", juni:"06", juli:"07", augustus:"08",
+    september:"09", oktober:"10", november:"11", december:"12"
   };
   const parts = d.split(" ");
-  return `${parts[2]}-${maanden[parts[1]]}-${parts[0].padStart(2, '0')}`;
+  return `${parts[2]}-${maanden[parts[1]]}-${parts[0].padStart(2,'0')}`;
 }
 
-/* -------------------------
-   MODAL
-------------------------- */
+async function onEventClick(info) {
+  selectedEvent = info.event.extendedProps;
+
+  document.getElementById("details").innerHTML = `
+    <b>${selectedEvent.postIcoon} ${selectedEvent.postNaam}</b><br>
+    <b>School:</b> ${selectedEvent.school}<br>
+    <b>Datum:</b> ${selectedEvent.datum}<br>
+    <b>Begeleider:</b> ${selectedEvent.begeleider || "-"}<br>
+    <b>Email:</b> ${selectedEvent.email || "-"}<br>
+    <b>GSM:</b> ${selectedEvent.gsm || "-"}<br>
+    <b>Status:</b> ${selectedEvent.status || "-"}
+  `;
+
+  await updateBezetting(selectedEvent);
+  document.getElementById("modal").style.display = "block";
+}
+
+async function updateBezetting(ev) {
+  const { data: beschikbaar } = await client
+    .from("beschikbaarheid")
+    .select("*")
+    .eq("datum", ev.datum);
+
+  const nodig = 2;
+  const aanwezig = (beschikbaar || []).filter(b => b.aanwezig);
+  const tekort = Math.max(0, nodig - aanwezig.length);
+
+  const lijst = aanwezig.length
+    ? aanwezig.map(b => `${b.user_email}`).join("<br>")
+    : "Nog niemand";
+
+  document.getElementById("bezetting").innerHTML = `
+    <b>Ingeschreven begeleiders (${aanwezig.length}/${nodig}):</b><br>
+    ${lijst}<br>
+    ${tekort > 0 ? `<span style="color:#c71f1f;">Nog ${tekort} nodig</span>` : `<span style="color:green;">Volledig bemand</span>`}
+  `;
+}
+
 function closeModal() {
   document.getElementById("modal").style.display = "none";
+  selectedEvent = null;
 }
 
 async function setBeschikbaarheid(aanwezig) {
-  if (!selectedEvent) return;
+  if (!selectedEvent || !currentUser) return;
+
+  await client
+    .from("beschikbaarheid")
+    .delete()
+    .eq("user_email", currentUser.email)
+    .eq("datum", selectedEvent.datum);
 
   await client.from("beschikbaarheid").insert([{
     user_email: currentUser.email,
     datum: selectedEvent.datum,
-    aanwezig
+    aanwezig,
+    ruil_gevraagd: false
   }]);
 
-  alert(aanwezig ? "Je hebt je beschikbaar gesteld!" : "Je zoekt een vervanger!");
-  closeModal();
+  alert(aanwezig ? "Je hebt je beschikbaar gesteld." : "Je bent niet beschikbaar voor dit bezoek.");
+  await updateBezetting(selectedEvent);
 }
 
-/* -------------------------
-   BESCHIKBAARHEID
-------------------------- */
+async function vraagRuil() {
+  if (!selectedEvent || !currentUser) return;
+
+  await client
+    .from("beschikbaarheid")
+    .update({ ruil_gevraagd: true })
+    .eq("user_email", currentUser.email)
+    .eq("datum", selectedEvent.datum);
+
+  alert("Je hebt aangegeven dat je je dienst wil ruilen. Een collega kan dit overnemen.");
+}
+
+/* Beschikbaarheid slots onder kalender */
+
 function laadBeschikbaarheidSlots() {
   const container = document.getElementById("beschikbaarheidContainer");
   container.innerHTML = "";
@@ -202,9 +411,12 @@ function laadBeschikbaarheidSlots() {
     cb.type = "checkbox";
     cb.value = key;
 
+    const label = document.createElement("span");
+    label.textContent = `📅 ${key}`;
+
     checkboxes.push(cb);
     div.appendChild(cb);
-    div.append(" " + key);
+    div.appendChild(label);
     container.appendChild(div);
   }));
 }
@@ -223,26 +435,28 @@ async function laadBestaandeBeschikbaarheid() {
 }
 
 async function opslaanBeschikbaarheid() {
-  await client.from("beschikbaarheid").delete().eq("user_email", currentUser.email);
+  await client
+    .from("beschikbaarheid")
+    .delete()
+    .eq("user_email", currentUser.email)
+    .in("datum", datums.flatMap(d => tijden.map(t => `${d} - ${t}`)));
 
   const inserts = checkboxes
     .filter(cb => cb.checked)
     .map(cb => ({
       user_email: currentUser.email,
       datum: cb.value,
-      aanwezig: true
+      aanwezig: true,
+      ruil_gevraagd: false
     }));
 
   if (inserts.length > 0) {
     await client.from("beschikbaarheid").insert(inserts);
   }
 
-  alert("✅ Beschikbaarheid opgeslagen!");
+  alert("Beschikbaarheid opgeslagen.");
 }
 
-/* -------------------------
-   LOGOUT
-------------------------- */
 async function logout() {
   await client.auth.signOut();
   window.location.href = "login.html";
