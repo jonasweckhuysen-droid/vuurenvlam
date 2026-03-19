@@ -56,13 +56,14 @@ button {
   <button class="logout" id="logoutBtn">Logout</button>
 </div>
 
-<!-- ✅ JUISTE VOLGORDE -->
+<!-- ✅ SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+
+<!-- ✅ JUISTE FULLCALENDAR -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
 
-// 🔥 WACHT TOT ALLES GELADEN IS (BELANGRIJK!)
 window.onload = async function() {
 
   const supabase = window.supabase.createClient(
@@ -80,7 +81,7 @@ window.onload = async function() {
   document.getElementById("welcome").innerText =
     "Welkom " + user.email;
 
-  // 🔥 NU BESTAAT FULLCALENDAR ZEKER
+  // 🔥 NU WERKT DIT
   const calendar = new FullCalendar.Calendar(
     document.getElementById('calendar'),
     {
@@ -91,7 +92,6 @@ window.onload = async function() {
 
   calendar.render();
 
-  // 🔥 DATA LADEN
   const { data, error } = await supabase
     .from("aanvragen")
     .select("*");
@@ -100,29 +100,18 @@ window.onload = async function() {
 
   if (error) {
     console.error(error);
-    alert("Fout bij ophalen data");
     return;
   }
 
-  if (!data || data.length === 0) {
-    alert("Geen aanvragen gevonden!");
-  }
-
   data.forEach(item => {
-
-    if (!item.datum_tijd) {
-      console.warn("Geen datum_tijd:", item);
-      return;
-    }
+    if (!item.datum_tijd) return;
 
     calendar.addEvent({
       title: item.school || "Geen naam",
       start: item.datum_tijd
     });
-
   });
 
-  // 🔥 LOGOUT
   document.getElementById("logoutBtn").onclick = async () => {
     await supabase.auth.signOut();
     window.location.href = "login.html";
