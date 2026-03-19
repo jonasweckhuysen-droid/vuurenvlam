@@ -108,27 +108,42 @@
 
       <div class="input-group">
         <label>🏫 Schoolnaam</label>
-        <input type="text" required>
+        <input type="text" id="school" required>
       </div>
 
       <div class="input-group">
         <label>👤 Naam begeleider</label>
-        <input type="text" required>
+        <input type="text" id="begeleider" required>
       </div>
 
       <div class="input-group">
         <label>📧 E-mail</label>
-        <input type="email" required>
+        <input type="email" id="email" required>
       </div>
 
       <div class="input-group">
         <label>📱 GSM nummer begeleider</label>
-        <input type="tel" required>
+        <input type="tel" id="gsm" required>
       </div>
 
       <div class="input-group">
         <label>👨‍👩‍👧‍👦 Aantal kinderen</label>
-        <input type="number" required>
+        <input type="number" id="aantal" required>
+      </div>
+
+      <!-- 🔥 NIEUWE POST-SELECTIE -->
+      <div class="input-group">
+        <label>🚒 Kies een brandweerpost</label>
+        <select id="postSelect" required>
+          <option value="">-- Kies een post --</option>
+          <option value="1">Post Balen</option>
+          <option value="2">Post Geel</option>
+          <option value="3">Post Grobbendonk</option>
+          <option value="4">Post Herentals</option>
+          <option value="5">Post Herenthout</option>
+          <option value="6">Post Mol</option>
+          <option value="7">Post Westerlo</option>
+        </select>
       </div>
 
       <div class="input-group">
@@ -170,9 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tijdsblokken = ["10:00", "13:30"];
   const select = document.getElementById("datumSelect");
 
-  // 🔥 SLOTS LADEN (EN VOLLE VERWIJDEREN)
   async function laadBeschikbareSlots() {
-
     const { data, error } = await supabase
       .from("aanvragen")
       .select("datum");
@@ -191,7 +204,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const key = datum + " - " + tijd;
 
-        // ❌ al bezet → niet tonen
         if (bezet.includes(key)) return;
 
         const option = document.createElement("option");
@@ -204,26 +216,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 👉 dropdown laden bij start
   laadBeschikbareSlots();
 
-  // 🔥 FORM SUBMIT
   document.getElementById("aanvraagForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    const inputs = document.querySelectorAll("input");
-
     const data = {
-      school: inputs[0].value,
-      begeleider: inputs[1].value,
-      email: inputs[2].value,
-      gsm: inputs[3].value,
-      aantal: parseInt(inputs[4].value),
+      school: document.getElementById("school").value,
+      begeleider: document.getElementById("begeleider").value,
+      email: document.getElementById("email").value,
+      gsm: document.getElementById("gsm").value,
+      aantal: parseInt(document.getElementById("aantal").value),
       datum: select.value,
+      post_nummer: parseInt(document.getElementById("postSelect").value),
       status: "nieuw"
     };
 
-    // 🔴 EXTRA CHECK TEGEN DUBBEL BOEKEN
     const { data: bestaande } = await supabase
       .from("aanvragen")
       .select("id")
