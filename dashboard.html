@@ -8,71 +8,17 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
 
 <style>
-body {
-  margin:0;
-  font-family:'Segoe UI';
-  background: linear-gradient(160deg,#ff6a00,#ffb347);
-}
-
-header {
-  background:#c71f1f;
-  color:white;
-  padding:20px;
-  text-align:center;
-  font-size:22px;
-}
-
-.container {
-  max-width:1000px;
-  margin:20px auto;
-  background:white;
-  padding:20px;
-  border-radius:20px;
-}
-
-button {
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  margin-top:10px;
-}
-
-.logout {
-  background:#ff6a00;
-  color:white;
-}
-
-#modal {
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%;
-  height:100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 100;
-}
-
-#modal-content {
-  background:white;
-  max-width:500px;
-  margin:100px auto;
-  padding:20px;
-  border-radius:15px;
-  text-align:left;
-}
-
+body { margin:0; font-family:'Segoe UI'; background: linear-gradient(160deg,#ff6a00,#ffb347); }
+header { background:#c71f1f; color:white; padding:20px; text-align:center; font-size:22px; }
+.container { max-width:1000px; margin:20px auto; background:white; padding:20px; border-radius:20px; }
+button { padding:10px; border:none; border-radius:10px; cursor:pointer; margin-top:10px; }
+.logout { background:#ff6a00; color:white; }
+#modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 100; }
+#modal-content { background:white; max-width:500px; margin:100px auto; padding:20px; border-radius:15px; text-align:left; }
 .btn-close { background:gray; color:white; margin-right:5px; }
 .btn-available { background:green; color:white; margin-right:5px; }
 .btn-replace { background:orange; color:white; margin-right:5px; }
-
-.post-label {
-  display:inline-block;
-  padding:3px 8px;
-  border-radius:5px;
-  color:white;
-  margin-right:5px;
-}
+.post-label { display:inline-block; padding:3px 8px; border-radius:5px; color:white; margin-right:5px; }
 </style>
 </head>
 <body>
@@ -85,12 +31,10 @@ button {
   <button class="logout" id="logoutBtn">Logout</button>
 </div>
 
-<!-- MODAL -->
 <div id="modal">
   <div id="modal-content">
     <h3 id="event-title">Event Details</h3>
     <p id="event-info"></p>
-
     <div>
       <button class="btn-available" id="btnAvailable">Ik kan deelnemen</button>
       <button class="btn-replace" id="btnReplace">Ik zoek vervanger</button>
@@ -106,104 +50,55 @@ button {
 
 <script>
 window.onload = async function() {
-
+  // 🔐 Supabase
   const supabase = window.supabase.createClient(
     "https://elmkjlqcsshctmnbqbfq.supabase.co",
     "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
   );
 
+  // Dummy login
   const { data: { user } } = await supabase.auth.getUser();
   if(!user) { window.location.href="login.html"; return; }
 
-  // Naam weergeven
   const { data: profile } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
   document.getElementById("welcome").innerText = "Welkom " + (profile.name || profile.email);
 
-  // Colors per brandweerpost
-  const postColors = {
-    "Post 1":"#FF5733",
-    "Post 2":"#33B5FF",
-    "Post 3":"#FF33A8",
-    "Post 4":"#33FF57",
-    "Post 5":"#FFC133",
-    "Post 6":"#9933FF",
-    "Post 7":"#33FFF5"
-  };
+  const postColors = { "Post 1":"#FF5733","Post 2":"#33B5FF","Post 3":"#FF33A8","Post 4":"#33FF57","Post 5":"#FFC133","Post 6":"#9933FF","Post 7":"#33FFF5" };
 
-  // Calendar
+  // 🔥 Kalender
   const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView:'dayGridMonth',
     locale:'nl',
-    eventClick: async function(info) {
+    eventClick: function(info) {
       const event = info.event.extendedProps;
-      document.getElementById("event-title").innerText = event.school || "Geen schoolnaam";
+      document.getElementById("event-title").innerText = info.event.title;
       document.getElementById("event-info").innerHTML = `
-        <b>Begeleider:</b> ${event.begeleider}<br>
-        <b>Email:</b> ${event.email}<br>
-        <b>GSM:</b> ${event.gsm}<br>
-        <b>Status:</b> ${event.status}<br>
+        <b>Begeleider:</b> ${event.begeleider || ""}<br>
+        <b>Email:</b> ${event.email || ""}<br>
+        <b>GSM:</b> ${event.gsm || ""}<br>
+        <b>Status:</b> ${event.status || ""}<br>
         <b>Datum:</b> ${info.event.start.toLocaleString()}<br>
       `;
-
-      // Laad deelnemers
-      const { data: participants } = await supabase.from("beschikbaarheid").select("*").eq("event_id", event.id);
-      const participantsDiv = document.getElementById("participants");
-      participantsDiv.innerHTML = "";
-      participants.forEach(p => {
-        const span = document.createElement("span");
-        span.innerText = p.user_name + (p.replace?" (vervanger)":"");
-        span.className = "post-label";
-        span.style.backgroundColor = postColors[p.post] || "#666";
-        participantsDiv.appendChild(span);
-      });
-
-      // Buttons
-      document.getElementById("btnAvailable").onclick = async () => {
-        // Voeg jezelf toe
-        await supabase.from("beschikbaarheid").upsert({ user_id:user.id, user_name:profile.name, event_id:event.id, post:profile.post, replace:false });
-        alert("✅ Je hebt jezelf beschikbaar gesteld!");
-        document.getElementById("modal").style.display = "none";
-        loadEvents(); // Refresh
-      };
-      document.getElementById("btnReplace").onclick = async () => {
-        await supabase.from("beschikbaarheid").upsert({ user_id:user.id, user_name:profile.name, event_id:event.id, post:profile.post, replace:true });
-        alert("⚠️ Je zoekt een vervanger!");
-        document.getElementById("modal").style.display = "none";
-        loadEvents();
-      };
+      document.getElementById("participants").innerHTML = "Even laden...";
 
       document.getElementById("modal").style.display="block";
     }
   });
-
   calendar.render();
 
-  async function loadEvents() {
-    const { data: events } = await supabase.from("aanvragen").select("*");
-    calendar.removeAllEvents();
-    events.forEach(event => {
-      calendar.addEvent({
-        title: event.school || "Geen school",
-        start: event.datum_tijd,
-        color: postColors[event.post] || "#666",
-        extendedProps: event
-      });
-    });
-  }
-
-  await loadEvents();
+  // 🔹 Dummy event om te testen
+  calendar.addEvent({
+    title:"Test Event",
+    start:new Date(),
+    extendedProps:{ school:"School A", begeleider:"Jan", email:"jan@test.com", gsm:"012345", status:"nieuw", post:"Post 1" },
+    color:"#FF5733"
+  });
 
   // Close modal
-  document.getElementById("btnClose").onclick = () => {
-    document.getElementById("modal").style.display = "none";
-  };
+  document.getElementById("btnClose").onclick = () => { document.getElementById("modal").style.display="none"; };
 
   // Logout
-  document.getElementById("logoutBtn").onclick = async () => {
-    await supabase.auth.signOut();
-    window.location.href="login.html";
-  };
-
+  document.getElementById("logoutBtn").onclick = async () => { await supabase.auth.signOut(); window.location.href="login.html"; };
 };
 </script>
 
