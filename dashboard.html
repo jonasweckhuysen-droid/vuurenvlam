@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
+<title>Dashboard - Bezoeken</title>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
 
@@ -42,28 +42,69 @@ button {
   background:#ff6a00;
   color:white;
 }
+
+#modal {
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+}
+
+#modal-content {
+  background:white;
+  max-width:500px;
+  margin:100px auto;
+  padding:20px;
+  border-radius:15px;
+  text-align:left;
+}
+
+.btn-close { background:gray; color:white; margin-right:5px; }
+.btn-available { background:green; color:white; margin-right:5px; }
+.btn-replace { background:orange; color:white; margin-right:5px; }
+
+.post-label {
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:5px;
+  color:white;
+  margin-right:5px;
+}
 </style>
 </head>
-
 <body>
 
-<header>🔥 Dashboard</header>
+<header>🔥 Dashboard - Bezoeken</header>
 
 <div class="container">
   <div id="welcome"></div>
   <div id="calendar"></div>
-
   <button class="logout" id="logoutBtn">Logout</button>
 </div>
 
-<!-- ✅ SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- MODAL -->
+<div id="modal">
+  <div id="modal-content">
+    <h3 id="event-title">Event Details</h3>
+    <p id="event-info"></p>
 
-<!-- ✅ JUISTE FULLCALENDAR -->
+    <div>
+      <button class="btn-available" id="btnAvailable">Ik kan deelnemen</button>
+      <button class="btn-replace" id="btnReplace">Ik zoek vervanger</button>
+      <button class="btn-close" id="btnClose">Sluiten</button>
+    </div>
+    <h4>Deelnemers:</h4>
+    <div id="participants"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script>
-
 window.onload = async function() {
 
   const supabase = window.supabase.createClient(
@@ -72,53 +113,98 @@ window.onload = async function() {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
+  if(!user) { window.location.href="login.html"; return; }
 
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+  // Naam weergeven
+  const { data: profile } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+  document.getElementById("welcome").innerText = "Welkom " + (profile.name || profile.email);
 
-  document.getElementById("welcome").innerText =
-    "Welkom " + user.email;
+  // Colors per brandweerpost
+  const postColors = {
+    "Post 1":"#FF5733",
+    "Post 2":"#33B5FF",
+    "Post 3":"#FF33A8",
+    "Post 4":"#33FF57",
+    "Post 5":"#FFC133",
+    "Post 6":"#9933FF",
+    "Post 7":"#33FFF5"
+  };
 
-  // 🔥 NU WERKT DIT
-  const calendar = new FullCalendar.Calendar(
-    document.getElementById('calendar'),
-    {
-      initialView: 'dayGridMonth',
-      locale: 'nl'
+  // Calendar
+  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    initialView:'dayGridMonth',
+    locale:'nl',
+    eventClick: async function(info) {
+      const event = info.event.extendedProps;
+      document.getElementById("event-title").innerText = event.school || "Geen schoolnaam";
+      document.getElementById("event-info").innerHTML = `
+        <b>Begeleider:</b> ${event.begeleider}<br>
+        <b>Email:</b> ${event.email}<br>
+        <b>GSM:</b> ${event.gsm}<br>
+        <b>Status:</b> ${event.status}<br>
+        <b>Datum:</b> ${info.event.start.toLocaleString()}<br>
+      `;
+
+      // Laad deelnemers
+      const { data: participants } = await supabase.from("beschikbaarheid").select("*").eq("event_id", event.id);
+      const participantsDiv = document.getElementById("participants");
+      participantsDiv.innerHTML = "";
+      participants.forEach(p => {
+        const span = document.createElement("span");
+        span.innerText = p.user_name + (p.replace?" (vervanger)":"");
+        span.className = "post-label";
+        span.style.backgroundColor = postColors[p.post] || "#666";
+        participantsDiv.appendChild(span);
+      });
+
+      // Buttons
+      document.getElementById("btnAvailable").onclick = async () => {
+        // Voeg jezelf toe
+        await supabase.from("beschikbaarheid").upsert({ user_id:user.id, user_name:profile.name, event_id:event.id, post:profile.post, replace:false });
+        alert("✅ Je hebt jezelf beschikbaar gesteld!");
+        document.getElementById("modal").style.display = "none";
+        loadEvents(); // Refresh
+      };
+      document.getElementById("btnReplace").onclick = async () => {
+        await supabase.from("beschikbaarheid").upsert({ user_id:user.id, user_name:profile.name, event_id:event.id, post:profile.post, replace:true });
+        alert("⚠️ Je zoekt een vervanger!");
+        document.getElementById("modal").style.display = "none";
+        loadEvents();
+      };
+
+      document.getElementById("modal").style.display="block";
     }
-  );
+  });
 
   calendar.render();
 
-  const { data, error } = await supabase
-    .from("aanvragen")
-    .select("*");
-
-  console.log("DATA:", data);
-
-  if (error) {
-    console.error(error);
-    return;
+  async function loadEvents() {
+    const { data: events } = await supabase.from("aanvragen").select("*");
+    calendar.removeAllEvents();
+    events.forEach(event => {
+      calendar.addEvent({
+        title: event.school || "Geen school",
+        start: event.datum_tijd,
+        color: postColors[event.post] || "#666",
+        extendedProps: event
+      });
+    });
   }
 
-  data.forEach(item => {
-    if (!item.datum_tijd) return;
+  await loadEvents();
 
-    calendar.addEvent({
-      title: item.school || "Geen naam",
-      start: item.datum_tijd
-    });
-  });
+  // Close modal
+  document.getElementById("btnClose").onclick = () => {
+    document.getElementById("modal").style.display = "none";
+  };
 
+  // Logout
   document.getElementById("logoutBtn").onclick = async () => {
     await supabase.auth.signOut();
-    window.location.href = "login.html";
+    window.location.href="login.html";
   };
 
 };
-
 </script>
 
 </body>
