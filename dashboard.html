@@ -168,6 +168,11 @@ button {
 <div class="main">
   <div id="welcome"></div>
 
+  <!-- ADMIN BUTTON -->
+  <button id="adminBtn" class="primary-btn" style="display:none;" onclick="openAdmin()">
+    🛠️ Adminpaneel
+  </button>
+
   <div id="legend"></div>
 
   <div id="calendar"></div>
@@ -180,6 +185,7 @@ button {
   </div>
 </div>
 
+<!-- MODAL -->
 <div id="modal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -202,27 +208,34 @@ button {
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
-const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-const client = supabase.createClient(supabaseUrl, supabaseKey);
+/* -------------------------
+   SUPABASE INIT
+------------------------- */
+const client = supabase.createClient(
+  "https://elmkjlqcsshctmnbqbfq.supabase.co",
+  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+);
 
 let currentUser = null;
 let selectedEvent = null;
 let checkboxes = [];
 
+/* -------------------------
+   POSTEN (7 kleuren + iconen)
+------------------------- */
 const posten = [
-  { naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
-  { naam: "Post Geel", kleur: "#3cb44b", icoon: "🧯" },
-  { naam: "Post Grobbendonk", kleur: "#ffe119", icoon: "🔥" },
-  { naam: "Post Herentals", kleur: "#4363d8", icoon: "🚨" },
-  { naam: "Post Herenthout", kleur: "#f58231", icoon: "🏫" },
-  { naam: "Post Mol", kleur: "#911eb4", icoon: "📟" },
-  { naam: "Post Westerlo", kleur: "#46f0f0", icoon: "📞" }
+  { naam: "Post 1", kleur: "#e6194b", icoon: "🚒" },
+  { naam: "Post 2", kleur: "#3cb44b", icoon: "🧯" },
+  { naam: "Post 3", kleur: "#ffe119", icoon: "🔥" },
+  { naam: "Post 4", kleur: "#4363d8", icoon: "🚨" },
+  { naam: "Post 5", kleur: "#f58231", icoon: "🏫" },
+  { naam: "Post 6", kleur: "#911eb4", icoon: "📟" },
+  { naam: "Post 7", kleur: "#46f0f0", icoon: "📞" }
 ];
 
-const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
-const tijden = ["10:00","13:30"];
-
+/* -------------------------
+   KALENDER INIT
+------------------------- */
 const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
   initialView:'dayGridMonth',
   locale:'nl',
@@ -231,17 +244,20 @@ const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), 
   eventClick: onEventClick
 });
 
+/* -------------------------
+   ONLOAD
+------------------------- */
 window.onload = async () => {
   const { data: { user } } = await client.auth.getUser();
   if (!user) { window.location.href = "login.html"; return; }
 
-  const { data: profile, error } = await client
+  const { data: profile } = await client
     .from("profiles")
     .select("*")
     .eq("user_id", user.id)
     .single();
 
-  if (error || !profile.approved) {
+  if (!profile.approved) {
     alert("Account niet goedgekeurd");
     await client.auth.signOut();
     window.location.href = "login.html";
@@ -249,8 +265,13 @@ window.onload = async () => {
   }
 
   currentUser = profile;
+
   document.getElementById("welcome").innerText =
     `Welkom, ${profile.name || profile.email}!`;
+
+  if (profile.is_admin) {
+    document.getElementById("adminBtn").style.display = "inline-block";
+  }
 
   bouwLegend();
   laadBeschikbaarheidSlots();
@@ -258,7 +279,7 @@ window.onload = async () => {
   await loadEvents();
   calendar.render();
 
-  // Realtime updates
+  /* Realtime updates */
   client.channel("realtime-aanvragen")
     .on("postgres_changes", { event:"*", schema:"public", table:"aanvragen" }, loadEvents)
     .subscribe();
@@ -270,6 +291,9 @@ window.onload = async () => {
     .subscribe();
 };
 
+/* -------------------------
+   LEGEND
+------------------------- */
 function bouwLegend() {
   const legend = document.getElementById("legend");
   legend.innerHTML = "";
@@ -285,27 +309,24 @@ function bouwLegend() {
   });
 }
 
+/* -------------------------
+   EVENTS LADEN
+------------------------- */
 async function loadEvents() {
-  const { data, error } = await client.from("aanvragen").select("*");
-  if (error) { console.error(error); return; }
-
+  const { data } = await client.from("aanvragen").select("*");
   calendar.removeAllEvents();
 
-  data.forEach((item, i) => {
+  data.forEach(item => {
     const [datum, tijd] = item.datum.split(" - ");
     const iso = convertToISO(datum) + "T" + tijd;
-    const postIndex = (item.post_nummer || 1) - 1;
-    const post = posten[postIndex] || posten[0];
+
+    const post = posten[(item.post_nummer || 1) - 1];
 
     calendar.addEvent({
       title: `${post.icoon} ${item.school}`,
       start: iso,
       color: post.kleur,
-      extendedProps: {
-        ...item,
-        postNaam: post.naam,
-        postIcoon: post.icoon
-      }
+      extendedProps: { ...item, postNaam: post.naam, postIcoon: post.icoon }
     });
   });
 }
@@ -320,6 +341,9 @@ function convertToISO(d) {
   return `${parts[2]}-${maanden[parts[1]]}-${parts[0].padStart(2,'0')}`;
 }
 
+/* -------------------------
+   EVENT CLICK
+------------------------- */
 async function onEventClick(info) {
   selectedEvent = info.event.extendedProps;
 
@@ -338,13 +362,13 @@ async function onEventClick(info) {
 }
 
 async function updateBezetting(ev) {
-  const { data: beschikbaar } = await client
+  const { data } = await client
     .from("beschikbaarheid")
     .select("*")
     .eq("datum", ev.datum);
 
   const nodig = 2;
-  const aanwezig = (beschikbaar || []).filter(b => b.aanwezig);
+  const aanwezig = data.filter(b => b.aanwezig);
   const tekort = Math.max(0, nodig - aanwezig.length);
 
   const lijst = aanwezig.length
@@ -363,8 +387,11 @@ function closeModal() {
   selectedEvent = null;
 }
 
+/* -------------------------
+   BESCHIKBAARHEID
+------------------------- */
 async function setBeschikbaarheid(aanwezig) {
-  if (!selectedEvent || !currentUser) return;
+  if (!selectedEvent) return;
 
   await client
     .from("beschikbaarheid")
@@ -379,23 +406,25 @@ async function setBeschikbaarheid(aanwezig) {
     ruil_gevraagd: false
   }]);
 
-  alert(aanwezig ? "Je hebt je beschikbaar gesteld." : "Je bent niet beschikbaar voor dit bezoek.");
+  alert(aanwezig ? "Je hebt je beschikbaar gesteld." : "Je bent niet beschikbaar.");
   await updateBezetting(selectedEvent);
 }
 
 async function vraagRuil() {
-  if (!selectedEvent || !currentUser) return;
-
   await client
     .from("beschikbaarheid")
     .update({ ruil_gevraagd: true })
     .eq("user_email", currentUser.email)
     .eq("datum", selectedEvent.datum);
 
-  alert("Je hebt aangegeven dat je je dienst wil ruilen. Een collega kan dit overnemen.");
+  alert("Je hebt een ruil aangevraagd.");
 }
 
-/* Beschikbaarheid slots onder kalender */
+/* -------------------------
+   BESCHIKBAARHEIDSLIJST
+------------------------- */
+const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
+const tijden = ["10:00","13:30"];
 
 function laadBeschikbaarheidSlots() {
   const container = document.getElementById("beschikbaarheidContainer");
@@ -438,8 +467,7 @@ async function opslaanBeschikbaarheid() {
   await client
     .from("beschikbaarheid")
     .delete()
-    .eq("user_email", currentUser.email)
-    .in("datum", datums.flatMap(d => tijden.map(t => `${d} - ${t}`)));
+    .eq("user_email", currentUser.email);
 
   const inserts = checkboxes
     .filter(cb => cb.checked)
@@ -455,6 +483,13 @@ async function opslaanBeschikbaarheid() {
   }
 
   alert("Beschikbaarheid opgeslagen.");
+}
+
+/* -------------------------
+   ADMIN + LOGOUT
+------------------------- */
+function openAdmin() {
+  window.location.href = "admin.html";
 }
 
 async function logout() {
