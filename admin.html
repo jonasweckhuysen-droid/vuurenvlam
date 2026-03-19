@@ -12,7 +12,191 @@ body {
   padding: 0;
 }
 header {
-  background: #c71f1f;
+  background: #c71f1f;<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adminpaneel – Accounts beheren</title>
+
+<style>
+body {
+  font-family:'Segoe UI';
+  background: linear-gradient(160deg,#ff6a00,#ffb347);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding-top:40px;
+  min-height:100vh;
+  margin:0;
+}
+
+.container {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter:blur(10px);
+  padding:30px;
+  border-radius:25px;
+  width:900px;
+  text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2 { color:white; margin-bottom:20px; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  background:white;
+  border-radius:15px;
+  overflow:hidden;
+}
+
+th, td {
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  font-size:15px;
+}
+
+th {
+  background:#ff6a00;
+  color:white;
+}
+
+button {
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.btn-approve { background:green; color:white; }
+.btn-block { background:red; color:white; }
+.btn-admin { background:#444; color:white; }
+.logout-btn {
+  margin-top:20px;
+  background:white;
+  color:#ff6a00;
+  font-weight:bold;
+  padding:12px 20px;
+  border-radius:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>👨‍🚒 Adminpaneel – Accounts beheren</h2>
+
+  <p id="adminInfo" style="color:white;font-size:18px;"></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Naam</th>
+        <th>Goedgekeurd</th>
+        <th>Admin</th>
+        <th>Acties</th>
+      </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+  </table>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const client = supabase.createClient(
+  "https://elmkjlqcsshctmnbqbfq.supabase.co",
+  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+);
+
+let currentUser = null;
+
+window.onload = async () => {
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) { window.location.href = "login.html"; return; }
+
+  // Profiel ophalen
+  const { data: profile } = await client
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  // Alleen admins mogen binnen
+  if (!profile || !profile.is_admin) {
+    alert("Je hebt geen toegang tot dit adminpaneel.");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  currentUser = profile;
+  document.getElementById("adminInfo").innerText =
+    `Ingelogd als admin: ${profile.email}`;
+
+  loadUsers();
+};
+
+async function loadUsers() {
+  const { data: users, error } = await client
+    .from("profiles")
+    .select("*")
+    .order("email");
+
+  if (error) { console.error(error); return; }
+
+  const table = document.getElementById("userTable");
+  table.innerHTML = "";
+
+  users.forEach(u => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${u.email}</td>
+      <td>${u.name || "-"}</td>
+      <td>${u.approved ? "✔️" : "❌"}</td>
+      <td>${u.is_admin ? "✔️" : "❌"}</td>
+      <td>
+        <button class="btn-approve" onclick="approveUser('${u.user_id}')">Goedkeuren</button>
+        <button class="btn-block" onclick="blockUser('${u.user_id}')">Blokkeren</button>
+      </td>
+    `;
+
+    table.appendChild(row);
+  });
+}
+
+async function approveUser(id) {
+  await client.from("profiles")
+    .update({ approved: true })
+    .eq("user_id", id);
+
+  loadUsers();
+}
+
+async function blockUser(id) {
+  await client.from("profiles")
+    .update({ approved: false })
+    .eq("user_id", id);
+
+  loadUsers();
+}
+
+async function logout() {
+  await client.auth.signOut();
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
+
   color: white;
   padding: 15px;
   text-align: center;
