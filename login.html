@@ -4,41 +4,112 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
+
 <style>
-body { font-family:'Segoe UI'; background: linear-gradient(160deg,#ff6a00,#ffb347); display:flex;justify-content:center;align-items:center;height:100vh;margin:0; }
-.container { background: rgba(255,255,255,0.15); backdrop-filter:blur(10px); padding:30px; border-radius:25px; width:350px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+body {
+  font-family:'Segoe UI';
+  background: linear-gradient(160deg,#ff6a00,#ffb347);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+
+.container {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter:blur(10px);
+  padding:30px;
+  border-radius:25px;
+  width:350px;
+  text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
 h2 { color:white; margin-bottom:20px; }
-input { width:100%; padding:12px; margin-bottom:15px; border-radius:15px; border:none; font-size:16px; }
-button { width:100%; padding:15px; background:white; color:#ff6a00; font-weight:bold; font-size:16px; border-radius:20px; border:none; cursor:pointer; }
+
+input {
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border-radius:15px;
+  border:none;
+  font-size:16px;
+}
+
+button {
+  width:100%;
+  padding:15px;
+  background:white;
+  color:#ff6a00;
+  font-weight:bold;
+  font-size:16px;
+  border-radius:20px;
+  border:none;
+  cursor:pointer;
+}
+
 button:hover { transform:scale(1.03); }
+
 p { color:white; margin-top:15px; }
 </style>
 </head>
+
 <body>
+
 <div class="container">
   <h2>🔐 Login</h2>
+
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Wachtwoord">
-  <button onclick="login()">Login</button>
-  <p>Nog geen account? <a href="register.html" style="color:white;text-decoration:underline;">Registreer</a></p>
+
+  <!-- ❌ onclick verwijderd -->
+  <button id="loginBtn">Login</button>
+
+  <p>Nog geen account?
+    <a href="register.html" style="color:white;text-decoration:underline;">Registreer</a>
+  </p>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!-- ✅ Supabase v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-const supabase = window.supabase.createClient(
-  "https://elmkjlqcsshctmnbqbfq.supabase.co",
-  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
-);
+document.addEventListener("DOMContentLoaded", () => {
 
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const supabase = window.supabase.createClient(
+    "https://elmkjlqcsshctmnbqbfq.supabase.co",
+    "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+  );
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { alert("Fout bij login: " + error.message); return; }
+  document.getElementById("loginBtn").addEventListener("click", async () => {
 
-  window.location.href = "dashboard.html";
-}
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      alert("Vul email en wachtwoord in!");
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    console.log("LOGIN:", data, error);
+
+    if (error) {
+      alert("Fout bij login: " + error.message);
+      return;
+    }
+
+    alert("✅ Login gelukt!");
+    window.location.href = "dashboard.html";
+  });
+
+});
 </script>
+
 </body>
 </html>
