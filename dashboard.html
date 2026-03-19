@@ -19,6 +19,7 @@ button { padding:10px; border:none; border-radius:10px; cursor:pointer; margin-t
 .btn-available { background:green; color:white; margin-right:5px; }
 .btn-replace { background:orange; color:white; margin-right:5px; }
 .post-label { display:inline-block; padding:3px 8px; border-radius:5px; color:white; margin-right:5px; }
+#participants { margin-top:10px; }
 </style>
 </head>
 <body>
@@ -50,27 +51,27 @@ button { padding:10px; border:none; border-radius:10px; cursor:pointer; margin-t
 
 <script>
 window.onload = async function() {
-  // 🔐 Supabase
-  const supabase = window.supabase.createClient(
-    "https://elmkjlqcsshctmnbqbfq.supabase.co",
-    "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
-  );
+  const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+  const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Dummy login
+  // 🔐 Controle login
   const { data: { user } } = await supabase.auth.getUser();
   if(!user) { window.location.href="login.html"; return; }
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
   document.getElementById("welcome").innerText = "Welkom " + (profile.name || profile.email);
 
+  // 7 brandweerposten kleuren
   const postColors = { "Post 1":"#FF5733","Post 2":"#33B5FF","Post 3":"#FF33A8","Post 4":"#33FF57","Post 5":"#FFC133","Post 6":"#9933FF","Post 7":"#33FFF5" };
 
-  // 🔥 Kalender
+  // 🔥 Kalender setup
   const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView:'dayGridMonth',
     locale:'nl',
-    eventClick: function(info) {
+    eventClick: async function(info) {
       const event = info.event.extendedProps;
+
       document.getElementById("event-title").innerText = info.event.title;
       document.getElementById("event-info").innerHTML = `
         <b>Begeleider:</b> ${event.begeleider || ""}<br>
@@ -78,21 +79,59 @@ window.onload = async function() {
         <b>GSM:</b> ${event.gsm || ""}<br>
         <b>Status:</b> ${event.status || ""}<br>
         <b>Datum:</b> ${info.event.start.toLocaleString()}<br>
+        <b>Post:</b> ${event.post || ""}<br>
       `;
-      document.getElementById("participants").innerHTML = "Even laden...";
+
+      // Haal deelnemers op
+      const { data: deelnemers } = await supabase.from("beschikbaarheid")
+        .select("*")
+        .eq("event_id", event.id);
+
+      const participantsDiv = document.getElementById("participants");
+      participantsDiv.innerHTML = "";
+      deelnemers.forEach(d => {
+        const span = document.createElement("span");
+        span.className = "post-label";
+        span.style.backgroundColor = postColors[d.post] || "#999";
+        span.innerText = d.user_name;
+        participantsDiv.appendChild(span);
+      });
+
+      // Knoppen
+      document.getElementById("btnAvailable").onclick = async () => {
+        // Max 2 deelnemers per event
+        if(deelnemers.length>=2) { alert("Er zijn al 2 deelnemers."); return; }
+        await supabase.from("beschikbaarheid").insert([{ event_id:event.id, user_id:user.id, user_name: profile.name, post: profile.post }]);
+        alert("✅ Je hebt je beschikbaarheid doorgegeven!");
+        document.getElementById("modal").style.display="none";
+        loadEvents();
+      };
+
+      document.getElementById("btnReplace").onclick = async () => {
+        alert("Verzoek om vervanger is verstuurd!");
+        document.getElementById("modal").style.display="none";
+      };
 
       document.getElementById("modal").style.display="block";
     }
   });
   calendar.render();
 
-  // 🔹 Dummy event om te testen
-  calendar.addEvent({
-    title:"Test Event",
-    start:new Date(),
-    extendedProps:{ school:"School A", begeleider:"Jan", email:"jan@test.com", gsm:"012345", status:"nieuw", post:"Post 1" },
-    color:"#FF5733"
-  });
+  // 🔹 Functie om events te laden
+  async function loadEvents() {
+    calendar.getEvents().forEach(ev => ev.remove()); // oude verwijderen
+    const { data: events } = await supabase.from("aanvragen").select("*");
+    events.forEach(ev => {
+      calendar.addEvent({
+        title: ev.school,
+        start: ev.datum,
+        extendedProps: ev,
+        color: postColors[ev.post] || "blue"
+      });
+    });
+  }
+
+  await loadEvents();
 
   // Close modal
   document.getElementById("btnClose").onclick = () => { document.getElementById("modal").style.display="none"; };
