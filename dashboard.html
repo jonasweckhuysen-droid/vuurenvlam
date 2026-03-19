@@ -3,206 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - Bezoeken</title>
+<title>Dashboard</title>
+
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+
 <style>
-body { font-family: Arial; margin: 0; background: #f4f4f4; }
-header { background: #c71f1f; color: white; padding: 15px; text-align: center; font-size: 20px; }
-.container { max-width: 1100px; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; }
-#calendar { margin-top: 20px; }
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; }
-.modal-content { background: white; padding: 20px; max-width: 500px; margin: 100px auto; border-radius: 10px; }
-button { margin-top: 10px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; }
-.btn-approve { background: green; color: white; }
-.btn-reject { background: red; color: white; }
-.btn-close { background: gray; color: white; }
-#beschikbaarheidContainer { margin-top: 20px; }
-.slot { margin: 5px 0; }
-#welcome { font-size: 18px; margin-bottom: 15px; }
-.logout-btn { margin-top: 15px; background: #ff6a00; color: white; }
-.logout-btn:hover { transform: scale(1.03); }
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  background: linear-gradient(160deg,#ff6a00,#ffb347);
+  color: white;
+}
+
+header {
+  padding: 20px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 12px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.btn-main { background: white; color:#ff6a00; }
+.btn-danger { background:red; color:white; }
+.btn-success { background:green; color:white; }
+.btn-admin { background:black; color:white; }
+
 </style>
 </head>
+
 <body>
 
-<header>🔥 Dashboard Bezoekaanvragen</header>
+<header>🔥 Dashboard</header>
 
 <div class="container">
+
+<div class="card">
   <div id="welcome"></div>
-  <div id="calendar"></div>
-
-  <h3>👨‍🚒 Geef je beschikbaarheid door</h3>
-  <div id="beschikbaarheidContainer"></div>
-  <button onclick="opslaanBeschikbaarheid()">Opslaan Beschikbaarheid</button>
-  <button class="logout-btn" onclick="logout()">Logout</button>
+  <button class="btn-main" onclick="logout()">Logout</button>
 </div>
 
-<!-- MODAL -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <h3>Details aanvraag</h3>
-    <p id="details"></p>
-    <button class="btn-approve" onclick="updateStatus('goedgekeurd')">Goedkeuren</button>
-    <button class="btn-reject" onclick="updateStatus('geweigerd')">Weigeren</button>
-    <button class="btn-close" onclick="closeModal()">Sluiten</button>
-  </div>
+<div id="events"></div>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+document.addEventListener("DOMContentLoaded", async () => {
 
-let selectedId = null;
+const supabase = window.supabase.createClient(
+  "https://elmkjlqcsshctmnbqbfq.supabase.co",
+  "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
+);
+
 let userEmail = "";
-let datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
-let tijden = ["10:00","13:30"];
-let checkboxes = [];
+let isAdmin = false;
 
-// 🔐 Check login & goedkeuring
-(async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) window.location.href = "login.html";
+// 🔐 LOGIN CHECK
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) return window.location.href = "login.html";
 
-  userEmail = user.email;
+userEmail = user.email;
 
-  const { data: profile } = await supabase
-    .from("profiles")
+// 🔥 PROFIEL
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("user_id", user.id)
+  .single();
+
+if (!profile.approved) {
+  alert("Niet goedgekeurd!");
+  return window.location.href = "login.html";
+}
+
+isAdmin = profile.is_admin;
+
+document.getElementById("welcome").innerHTML =
+  `Welkom <b>${profile.email}</b> ${isAdmin ? "(ADMIN)" : ""}`;
+
+// 🔥 EVENTS LADEN
+const { data: aanvragen } = await supabase.from("aanvragen").select("*");
+
+const container = document.getElementById("events");
+
+for (let event of aanvragen) {
+
+  const { data: inschrijvingen } = await supabase
+    .from("inschrijvingen")
     .select("*")
-    .eq("user_id", user.id)
-    .single();
+    .eq("event_id", event.id);
 
-  if (!profile.approved) {
-    alert("Je account is nog niet goedgekeurd door de beheerder!");
-    await supabase.auth.signOut();
-    window.location.href = "login.html";
-    return;
+  let actief = inschrijvingen.filter(i => i.status === "actief");
+  let vervanging = inschrijvingen.filter(i => i.status === "vervanging");
+
+  let isIngeschreven = actief.some(i => i.user_email === userEmail);
+
+  let html = `
+  <div class="card">
+    <b>${event.school}</b><br>
+    ${event.datum}<br>
+    Status: ${event.status}<br><br>
+
+    👨‍🚒 Ingeschreven (${actief.length}/2):<br>
+    ${actief.map(i => i.user_email).join("<br>") || "Niemand"}<br><br>
+
+    🔁 Vervanging gevraagd:<br>
+    ${vervanging.map(i => i.user_email).join("<br>") || "Geen"}<br><br>
+  `;
+
+  // 🔥 INSCHRIJVEN
+  if (actief.length < 2 && !isIngeschreven) {
+    html += `<button class="btn-success" onclick="inschrijven(${event.id})">Ik neem dit</button>`;
   }
 
-  document.getElementById("welcome").innerText = `Welkom, ${profile.name || profile.email}!`;
+  // 🔥 ANNULEREN
+  if (isIngeschreven) {
+    html += `<button class="btn-danger" onclick="annuleren(${event.id})">Annuleren</button>`;
+    html += `<button class="btn-main" onclick="vraagVervanging(${event.id})">Vraag vervanging</button>`;
+  }
 
-  laadBeschikbaarheidSlots();
-  loadData();
-})();
+  // 🔥 OVERNEMEN
+  if (vervanging.length > 0 && !isIngeschreven && actief.length < 2) {
+    html += `<button class="btn-main" onclick="overnemen(${event.id})">Neem over</button>`;
+  }
 
-// 🔥 Kalender starten
-const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-  initialView: 'dayGridMonth',
-  locale: 'nl',
-  eventClick: async function(info) {
-    selectedId = info.event.extendedProps.id;
-
-    const { data: mensen } = await supabase
-      .from("beschikbaarheid")
-      .select("user_email")
-      .eq("datum", info.event.extendedProps.datum);
-
-    let lijst = mensen.map(m => m.user_email).join("<br>");
-
-    document.getElementById("details").innerHTML = `
-      <b>School:</b> ${info.event.extendedProps.school}<br>
-      <b>Begeleider:</b> ${info.event.extendedProps.begeleider}<br>
-      <b>Email:</b> ${info.event.extendedProps.email}<br>
-      <b>GSM:</b> ${info.event.extendedProps.gsm}<br>
-      <b>Status:</b> ${info.event.extendedProps.status}<br>
-      <b>Beschikbaar:</b><br>${lijst || "Niemand"}
+  // 🔥 ADMIN
+  if (isAdmin) {
+    html += `
+      <br><br>
+      <button class="btn-admin" onclick="updateStatus(${event.id},'goedgekeurd')">Goedkeuren</button>
+      <button class="btn-admin" onclick="updateStatus(${event.id},'geweigerd')">Weigeren</button>
     `;
-
-    document.getElementById("modal").style.display = "block";
   }
-});
-calendar.render();
 
-// 🔥 Data laden
-async function loadData() {
-  const { data, error } = await supabase.from("aanvragen").select("*");
-  if (error) { console.error(error); return; }
+  html += `</div>`;
 
-  data.forEach(item => {
-    let parts = item.datum.split(" - ");
-    let date = convertToISO(parts[0]) + "T" + parts[1];
-    calendar.addEvent({
-      title: item.school,
-      start: date,
-      color: getColor(item.status),
-      extendedProps: item
-    });
-  });
+  container.innerHTML += html;
 }
 
-function convertToISO(datum) {
-  const maanden = { januari:"01", februari:"02", maart:"03", april:"04",
-    mei:"05", juni:"06", juli:"07", augustus:"08",
-    september:"09", oktober:"10", november:"11", december:"12" };
-  let parts = datum.split(" ");
-  let dag = parts[0];
-  let maand = maanden[parts[1]];
-  let jaar = parts[2];
-  return `${jaar}-${maand}-${dag.padStart(2,'0')}`;
-}
+// 🔥 FUNCTIONS
 
-function getColor(status) {
-  if(status==="nieuw") return "orange";
-  if(status==="goedgekeurd") return "green";
-  if(status==="geweigerd") return "red";
-  return "blue";
-}
-
-async function updateStatus(status) {
-  const { error } = await supabase.from("aanvragen").update({ status }).eq("id", selectedId);
-  if (error) { alert("Fout bij update"); return; }
+window.inschrijven = async (id) => {
+  await supabase.from("inschrijvingen").insert([{ event_id: id, user_email: userEmail }]);
   location.reload();
-}
+};
 
-function closeModal() { document.getElementById("modal").style.display = "none"; }
+window.annuleren = async (id) => {
+  await supabase.from("inschrijvingen")
+    .delete()
+    .eq("event_id", id)
+    .eq("user_email", userEmail);
+  location.reload();
+};
 
-// 🔥 Beschikbaarheid
-function laadBeschikbaarheidSlots() {
-  const container = document.getElementById("beschikbaarheidContainer");
-  container.innerHTML = "";
-  checkboxes = [];
+window.vraagVervanging = async (id) => {
+  await supabase.from("inschrijvingen")
+    .update({ status: "vervanging" })
+    .eq("event_id", id)
+    .eq("user_email", userEmail);
+  location.reload();
+};
 
-  datums.forEach(datum => {
-    tijden.forEach(tijd => {
-      const key = datum + " - " + tijd;
-      const div = document.createElement("div");
-      div.className = "slot";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.value = key;
-      checkboxes.push(checkbox);
-      div.appendChild(checkbox);
-      div.append(" " + key);
-      container.appendChild(div);
-    });
-  });
+window.overnemen = async (id) => {
+  await supabase.from("inschrijvingen").insert([{ event_id: id, user_email: userEmail }]);
+  location.reload();
+};
 
-  (async () => {
-    const { data: bestaande } = await supabase
-      .from("beschikbaarheid")
-      .select("datum")
-      .eq("user_email", userEmail);
+window.updateStatus = async (id, status) => {
+  await supabase.from("aanvragen").update({ status }).eq("id", id);
+  location.reload();
+};
 
-    bestaande.forEach(b => {
-      checkboxes.forEach(cb => { if(cb.value===b.datum) cb.checked=true; });
-    });
-  })();
-}
-
-async function opslaanBeschikbaarheid() {
-  await supabase.from("beschikbaarheid").delete().eq("user_email", userEmail);
-  const inserts = checkboxes.filter(cb => cb.checked).map(cb => ({ user_email: userEmail, datum: cb.value }));
-  if(inserts.length>0) await supabase.from("beschikbaarheid").insert(inserts);
-  alert("✅ Beschikbaarheid opgeslagen!");
-}
-
-async function logout() {
+window.logout = async () => {
   await supabase.auth.signOut();
   window.location.href = "login.html";
-}
+};
+
+});
 </script>
 
 </body>
