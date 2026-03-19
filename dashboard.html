@@ -56,21 +56,20 @@ button {
   <button class="logout" id="logoutBtn">Logout</button>
 </div>
 
-<!-- ✅ SCRIPTS (ELK MAAR 1 KEER!) -->
+<!-- ✅ JUISTE VOLGORDE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
 
-document.addEventListener("DOMContentLoaded", async () => {
+// 🔥 WACHT TOT ALLES GELADEN IS (BELANGRIJK!)
+window.onload = async function() {
 
-  // 🔥 SUPABASE (1 KEER!)
   const supabase = window.supabase.createClient(
     "https://elmkjlqcsshctmnbqbfq.supabase.co",
     "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
   );
 
-  // 🔐 LOGIN CHECK
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -81,15 +80,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("welcome").innerText =
     "Welkom " + user.email;
 
-  // 📅 KALENDER
-  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-    initialView: 'dayGridMonth',
-    locale: 'nl'
-  });
+  // 🔥 NU BESTAAT FULLCALENDAR ZEKER
+  const calendar = new FullCalendar.Calendar(
+    document.getElementById('calendar'),
+    {
+      initialView: 'dayGridMonth',
+      locale: 'nl'
+    }
+  );
 
   calendar.render();
 
-  // 📊 DATA LADEN
+  // 🔥 DATA LADEN
   const { data, error } = await supabase
     .from("aanvragen")
     .select("*");
@@ -121,12 +123,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // 🔥 LOGOUT
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
+  document.getElementById("logoutBtn").onclick = async () => {
     await supabase.auth.signOut();
     window.location.href = "login.html";
-  });
+  };
 
-});
+};
 
 </script>
 
