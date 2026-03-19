@@ -11,8 +11,16 @@ header { background:#c71f1f; color:white; padding:15px; text-align:center; font-
 .container { max-width:1100px; margin:20px auto; padding:20px; background:white; border-radius:15px; }
 #welcome { font-size:18px; margin-bottom:15px; }
 #calendar { margin-top:20px; }
-.logout-btn { margin-top:15px; background:#ff6a00; color:white; border-radius:15px; padding:10px 15px; border:none; cursor:pointer; }
+.slot { margin:5px 0; }
+#beschikbaarheidContainer { margin-top:20px; }
+button { padding:10px; border:none; border-radius:8px; cursor:pointer; margin-top:10px; }
+.logout-btn { background:#ff6a00; color:white; margin-top:15px; }
 .logout-btn:hover { transform:scale(1.03); }
+.btn-approve { background:green; color:white; }
+.btn-reject { background:red; color:white; }
+.btn-close { background:gray; color:white; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; }
+.modal-content { background:white; padding:20px; max-width:500px; margin:100px auto; border-radius:10px; }
 </style>
 </head>
 <body>
@@ -21,71 +29,130 @@ header { background:#c71f1f; color:white; padding:15px; text-align:center; font-
 <div class="container">
   <div id="welcome"></div>
   <div id="calendar"></div>
+
+  <h3>👨‍🚒 Geef je beschikbaarheid door</h3>
+  <div id="beschikbaarheidContainer"></div>
+  <button onclick="opslaanBeschikbaarheid()">Opslaan Beschikbaarheid</button>
   <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3>Details aanvraag</h3>
+    <p id="details"></p>
+    <button class="btn-approve" onclick="setBeschikbaarheid(true)">Beschikbaar</button>
+    <button class="btn-reject" onclick="setBeschikbaarheid(false)">Vervanger zoeken</button>
+    <button class="btn-close" onclick="closeModal()">Sluiten</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 <script>
-  // 🔐 Supabase
-  const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-  const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  let userProfile = null;
+let currentUser = null;
+let selectedEvent = null;
+let checkboxes = [];
 
-  window.onload = async () => {
-    // 🔐 User check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href="login.html"; return; }
+const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
+const tijden = ["10:00","13:30"];
+const posten = ["Post 1","Post 2","Post 3","Post 4","Post 5","Post 6","Post 7"];
+const kleuren = ["#e6194b","#3cb44b","#ffe119","#4363d8","#f58231","#911eb4","#46f0f0"];
 
-    const { data: profile, error } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
-    if(error || !profile.approved){ 
-      alert("Je account is niet goedgekeurd!"); 
-      await supabase.auth.signOut(); 
-      window.location.href="login.html"; 
-      return; 
-    }
-
-    userProfile = profile;
-    document.getElementById("welcome").innerText = `Welkom, ${profile.name || profile.email}!`;
-
-    loadEvents();
-  };
-
-  function convertToISO(datum){
-    const maanden = { januari:"01", februari:"02", maart:"03", april:"04", mei:"05", juni:"06", juli:"07", augustus:"08", september:"09", oktober:"10", november:"11", december:"12"};
-    const parts = datum.split(" "); const dag = parts[0]; const maand = maanden[parts[1]]; const jaar = parts[2];
-    return `${jaar}-${maand}-${dag.padStart(2,'0')}`;
+window.onload = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user){ window.location.href="login.html"; return; }
+  
+  const { data: profile, error } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+  if(error || !profile.approved){ 
+    alert("Account niet goedgekeurd"); 
+    await supabase.auth.signOut(); 
+    window.location.href="login.html"; 
+    return; 
   }
 
-  // 🔥 Kalender
-  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'),{
-    initialView:'dayGridMonth',
-    locale:'nl'
+  currentUser = profile;
+  document.getElementById("welcome").innerText = `Welkom, ${profile.name || profile.email}!`;
+  laadBeschikbaarheidSlots();
+  loadEvents();
+};
+
+// Kalender
+const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+  initialView:'dayGridMonth',
+  locale:'nl',
+  eventClick: async (info) => {
+    selectedEvent = info.event.extendedProps;
+    const { data: beschikbaar } = await supabase.from("beschikbaarheid").select("*").eq("datum", selectedEvent.datum);
+    const lijst = beschikbaar.map(b => b.user_email).join("<br>") || "Niemand";
+    
+    document.getElementById("details").innerHTML = `
+      <b>School:</b> ${selectedEvent.school}<br>
+      <b>Begeleider:</b> ${selectedEvent.begeleider}<br>
+      <b>Email:</b> ${selectedEvent.email}<br>
+      <b>GSM:</b> ${selectedEvent.gsm}<br>
+      <b>Status:</b> ${selectedEvent.status}<br>
+      <b>Beschikbaar:</b><br>${lijst}
+    `;
+    document.getElementById("modal").style.display="block";
+  }
+});
+calendar.render();
+
+async function loadEvents(){
+  const { data, error } = await supabase.from("aanvragen").select("*");
+  if(error){ console.error(error); return; }
+
+  data.forEach((item,i)=>{
+    const date = convertToISO(item.datum.split(" - ")[0]) + "T" + item.datum.split(" - ")[1];
+    const kleur = kleuren[i % kleuren.length];
+    calendar.addEvent({ title:item.school, start:date, color:kleur, extendedProps:item });
   });
-  calendar.render();
+}
 
-  // 🔥 Events laden
-  async function loadEvents(){
-    const { data, error } = await supabase.from("aanvragen").select("*");
-    if(error){ console.error(error); return; }
+function convertToISO(d){ 
+  const maanden = { januari:"01", februari:"02", maart:"03", april:"04", mei:"05", juni:"06", juli:"07", augustus:"08", september:"09", oktober:"10", november:"11", december:"12"};
+  const parts=d.split(" "); return `${parts[2]}-${maanden[parts[1]]}-${parts[0].padStart(2,'0')}`;
+}
 
-    data.forEach(item=>{
-      const date = convertToISO(item.datum.split(" - ")[0]) + "T" + item.datum.split(" - ")[1];
-      calendar.addEvent({
-        title: item.school,
-        start: date,
-        color: item.status === "goedgekeurd" ? "green" : item.status === "geweigerd" ? "red" : "orange",
-        extendedProps: item
-      });
-    });
-  }
+function closeModal(){ document.getElementById("modal").style.display="none"; }
+async function setBeschikbaarheid(aanwezig){
+  if(!selectedEvent) return;
+  await supabase.from("beschikbaarheid").insert([{user_email:currentUser.email, datum:selectedEvent.datum, aanwezig:aanwezig}]);
+  alert(aanwezig ? "Je hebt je beschikbaar gesteld!" : "Je zoekt een vervanger!");
+  closeModal();
+}
 
-  async function logout(){
-    await supabase.auth.signOut();
-    window.location.href="login.html";
-  }
+// Beschikbaarheid slots
+function laadBeschikbaarheidSlots(){
+  const container = document.getElementById("beschikbaarheidContainer");
+  container.innerHTML="";
+  checkboxes=[];
+  datums.forEach(d=>tijden.forEach(t=>{
+    const key=d+" - "+t;
+    const div=document.createElement("div");
+    div.className="slot";
+    const cb=document.createElement("input");
+    cb.type="checkbox"; cb.value=key;
+    checkboxes.push(cb);
+    div.appendChild(cb); div.append(" "+key); container.appendChild(div);
+  }));
+}
+
+async function opslaanBeschikbaarheid(){
+  await supabase.from("beschikbaarheid").delete().eq("user_email",currentUser.email);
+  const inserts=checkboxes.filter(cb=>cb.checked).map(cb=>({user_email:currentUser.email, datum:cb.value, aanwezig:true}));
+  if(inserts.length>0) await supabase.from("beschikbaarheid").insert(inserts);
+  alert("✅ Beschikbaarheid opgeslagen!");
+}
+
+async function logout(){
+  await supabase.auth.signOut();
+  window.location.href="login.html";
+}
 </script>
 
 </body>
