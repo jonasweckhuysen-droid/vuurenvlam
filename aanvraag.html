@@ -202,19 +202,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function laadBeschikbareSlots() {
-    const gekozenPostNummer = postSelect.value;
+    const gekozenPostId = postSelect.value;
 
     datumSelect.innerHTML = '<option value="">-- Kies datum & uur --</option>';
     slotInfo.textContent = "";
 
-    if (!gekozenPostNummer) {
+    if (!gekozenPostId) {
       datumSelect.innerHTML = '<option value="">-- Kies eerst een post --</option>';
       return;
     }
 
     const { data: datums, error: err1 } = await supabase
       .from("beschikbare_datums")
-      .select("datum, tijd")
+      .select("datum, tijd, post_id")
+      .eq("post_id", gekozenPostId)
       .order("datum", { ascending: true })
       .order("tijd", { ascending: true });
 
@@ -226,7 +227,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const { data: bezetData, error: err2 } = await supabase
       .from("aanvragen")
-      .select("id, datum, tijd, post_nummer, status");
+      .select("id, datum, tijd, post_id, status")
+      .eq("post_id", gekozenPostId);
 
     if (err2) {
       console.error("Fout bij laden ingenomen slots:", err2);
@@ -236,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const vrijeSlots = (datums || []).filter(item => {
       const isBezet = (bezetData || []).some(b => {
-        const zelfdePost = String(b.post_nummer) === String(gekozenPostNummer);
+        const zelfdePost = String(b.post_id) === String(gekozenPostId);
         const zelfdeDatum = String(b.datum) === String(item.datum);
         const zelfdeTijd = String(b.tijd) === String(item.tijd);
         const status = String(b.status || "").toLowerCase().trim();
@@ -286,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const [datum, tijd] = datumSelect.value.split("|");
-    const postNummer = parseInt(postSelect.value, 10);
+    const postId = parseInt(postSelect.value, 10);
     const datum_tijd = `${datum}T${tijd}:00`;
 
     const aanvraagData = {
@@ -298,14 +300,14 @@ document.addEventListener("DOMContentLoaded", function () {
       datum: datum,
       tijd: tijd,
       datum_tijd: datum_tijd,
-      post_nummer: postNummer,
+      post_id: postId,
       status: "Nieuw"
     };
 
     const { data: bestaande, error: checkError } = await supabase
       .from("aanvragen")
       .select("id, status")
-      .eq("post_nummer", postNummer)
+      .eq("post_id", postId)
       .eq("datum", datum)
       .eq("tijd", tijd);
 
