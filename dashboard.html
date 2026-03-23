@@ -9,236 +9,1019 @@
 
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: linear-gradient(160deg, #ff6a00, #ffb347); min-height: 100vh; }
-    header { background: #c71f1f; color: white; padding: 18px 20px; text-align: center; font-size: 24px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .main { max-width: 1250px; margin: 24px auto; padding: 24px; background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 24px; box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
-    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-    #welcome { color: white; font-size: 20px; font-weight: 600; }
-    .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    select { padding: 8px 10px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; }
-    button { border: none; border-radius: 16px; padding: 11px 16px; cursor: pointer; font-size: 14px; font-weight: 600; transition: transform 0.2s ease, opacity 0.2s ease; }
-    button:hover { transform: scale(1.03); }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(160deg, #ff6a00, #ffb347);
+      min-height: 100vh;
+    }
+
+    header {
+      background: #c71f1f;
+      color: white;
+      padding: 18px 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .main {
+      max-width: 1250px;
+      margin: 24px auto;
+      padding: 24px;
+      background: rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    #welcome {
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select,
+    input[type="date"],
+    input[type="time"] {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+    }
+
     .primary-btn { background: white; color: #ff6a00; }
     .secondary-btn { background: #c71f1f; color: white; }
     .logout-btn { background: #444; color: white; }
-    #legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 18px 0; }
-    .legend-item { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.25); color: white; padding: 7px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; }
-    .legend-color { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.7); }
-    .calendar-wrap { background: white; border-radius: 18px; padding: 14px; box-shadow: 0 8px 18px rgba(0,0,0,0.08); margin-bottom: 24px; }
-    .section { margin-top: 24px; background: rgba(255,255,255,0.16); border-radius: 20px; padding: 20px; }
-    .section h3 { margin-top: 0; color: white; font-size: 20px; }
-    .section-note { color: rgba(255,255,255,0.9); font-size: 14px; margin-top: -8px; margin-bottom: 16px; }
-    #beschikbaarheidContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-    .slot { background: rgba(255,255,255,0.92); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 50px; }
-    .slot input[type="checkbox"] { transform: scale(1.15); cursor: pointer; }
+
+    #legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0 18px 0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.25);
+      color: white;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    .calendar-wrap {
+      background: white;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    #calendar {
+      min-height: 650px;
+    }
+
+    .section {
+      margin-top: 24px;
+      background: rgba(255,255,255,0.16);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      color: white;
+      font-size: 20px;
+    }
+
+    .section-note {
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+
+    #beschikbaarheidContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    .slot {
+      background: rgba(255,255,255,0.92);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      min-height: 50px;
+    }
+
+    .slot input[type="checkbox"] {
+      transform: scale(1.15);
+      cursor: pointer;
+    }
+
     .slot.full { opacity: 0.75; border-left: 5px solid #2e7d32; }
     .slot.partial { border-left: 5px solid #f57c00; }
     .slot.empty { border-left: 5px solid #c71f1f; }
+
     .slot-label { flex: 1; }
-    .slot-count { font-size: 12px; color: #555; font-weight: 700; white-space: nowrap; }
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; padding: 20px; overflow-y: auto; }
-    .modal-content { background: white; max-width: 620px; margin: 50px auto; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
-    .modal-header { background: #c71f1f; color: white; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .modal-header h3 { margin: 0; font-size: 22px; }
-    .close-x { background: rgba(255,255,255,0.2); color: white; border-radius: 12px; padding: 8px 12px; }
-    .modal-body { padding: 20px; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 16px; }
-    .info-item { background: #f7f7f7; border-radius: 14px; padding: 12px; font-size: 14px; }
-    .info-item strong { display: block; margin-bottom: 4px; color: #333; }
-    .status-box, .user-state { padding: 14px; border-radius: 14px; background: #fff7ef; margin-bottom: 16px; font-size: 14px; line-height: 1.5; }
-    .user-state { background: #f2f6ff; }
-    .modal-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .slot-count {
+      font-size: 12px;
+      color: #555;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .loading-note {
+      color: white;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background: white;
+      max-width: 620px;
+      margin: 50px auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    }
+
+    .modal-header {
+      background: #c71f1f;
+      color: white;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .close-x {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 12px;
+      padding: 8px 12px;
+    }
+
+    .modal-body {
+      padding: 20px;
+      color: black;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+      margin-bottom: 16px;
+    }
+
+    .info-item {
+      background: #f7f7f7;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    .info-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .status-box,
+    .user-state {
+      padding: 14px;
+      border-radius: 14px;
+      background: #fff7ef;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .user-state {
+      background: #f2f6ff;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
     .btn-available { background: #2e7d32; color: white; }
     .btn-unavailable { background: #757575; color: white; }
     .btn-swap { background: #f58231; color: white; }
-    .admin-actions { margin-top: 18px; padding-top: 16px; border-top: 1px solid #eee; }
-    .admin-actions-title { font-weight: 700; margin-bottom: 10px; }
     .btn-approve { background: #1b8f3a; color: white; }
     .btn-reject { background: #c71f1f; color: white; }
-    .small-note { font-size: 12px; color: #666; margin-top: 10px; }
-    .loading-note { color: white; font-size: 14px; margin-top: 8px; }
-    @media (max-width: 700px) { .info-grid { grid-template-columns: 1fr; } .main { margin: 12px; padding: 16px; } .modal-content { margin: 10px auto; } }
+
+    .admin-actions {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+
+    .admin-actions-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .small-note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .field-group {
+      margin-bottom: 14px;
+    }
+
+    .field-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    @media (max-width: 700px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .main { margin: 12px; padding: 16px; }
+      .modal-content { margin: 10px auto; }
+      .topbar-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .topbar-actions button,
+      .topbar-actions select {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
 
-<header>🔥 Dashboard Bezoekaanvragen</header>
+  <header>🔥 Dashboard Bezoekaanvragen</header>
 
-<div class="main">
-  <div class="topbar">
-    <div id="welcome">Welkom!</div>
-    <div class="topbar-actions">
-      <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
-      <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
-      <button id="logoutBtn" class="logout-btn">Logout</button>
-      <label for="filterPost" style="color:white;font-weight:600;">Filter per post:</label>
-      <select id="filterPost"><option value="">Alle posten</option></select>
-    </div>
-  </div>
+  <div class="main">
+    <div class="topbar">
+      <div id="welcome">Welkom!</div>
 
-  <div id="legend"></div>
+      <div class="topbar-actions">
+        <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
+        <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
 
-  <div class="calendar-wrap">
-    <div id="calendar"></div>
-  </div>
-
-  <div class="section">
-    <h3>📅 Algemene beschikbaarheid</h3>
-    <div class="section-note">
-      Hier kun je je op voorhand beschikbaar zetten. Per evenement zijn 2 personen nodig.
-    </div>
-    <div id="beschikbaarheidContainer"></div>
-    <button id="saveAvailabilityBtn" class="primary-btn" style="margin-top:16px;">Beschikbaarheid opslaan</button>
-    <div id="loadingSlots" class="loading-note"></div>
-    <button class="primary-btn" style="margin-top:16px;" onclick="openDatumModal()">➕ Nieuwe datum toevoegen</button>
-  </div>
-</div>
-
-<!-- Modal voor Event Details -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Details bezoek</h3>
-      <button class="close-x" id="closeModalBtn">X</button>
-    </div>
-    <div class="modal-body">
-      <div id="eventDetails" class="info-grid"></div>
-      <div id="bezettingBox" class="status-box"></div>
-      <div id="userStateBox" class="user-state"></div>
-      <div class="modal-actions">
-        <button class="btn-available" id="availableBtn">Ik ben beschikbaar</button>
-        <button class="btn-unavailable" id="unavailableBtn">Ik kan niet</button>
-        <button class="btn-swap" id="swapBtn">Ik zoek vervanging</button>
+        <label for="filterPost" style="color:white;font-weight:600;">Filter per post:</label>
+        <select id="filterPost">
+          <option value="">Alle posten</option>
+        </select>
       </div>
-      <div id="adminActions" class="admin-actions" style="display:none;">
-        <div class="admin-actions-title">Admin acties</div>
+    </div>
+
+    <div id="legend"></div>
+
+    <div class="calendar-wrap">
+      <div id="calendar"></div>
+    </div>
+
+    <div class="section">
+      <h3>📅 Algemene beschikbaarheid</h3>
+      <div class="section-note">
+        Hier kun je je op voorhand beschikbaar zetten. Per evenement zijn 2 personen nodig.
+      </div>
+
+      <div id="beschikbaarheidContainer"></div>
+
+      <button id="saveAvailabilityBtn" class="primary-btn" style="margin-top:16px;">
+        Beschikbaarheid opslaan
+      </button>
+
+      <div id="loadingSlots" class="loading-note"></div>
+
+      <button
+        id="openDateModalBtn"
+        class="primary-btn"
+        style="margin-top:16px; display:none;"
+      >
+        ➕ Nieuwe datum toevoegen
+      </button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Details bezoek</h3>
+        <button class="close-x" id="closeModalBtn">X</button>
+      </div>
+      <div class="modal-body">
+        <div id="eventDetails" class="info-grid"></div>
+        <div id="bezettingBox" class="status-box"></div>
+        <div id="userStateBox" class="user-state"></div>
+
         <div class="modal-actions">
-          <button class="btn-approve" id="approveBtn">Aanvraag goedkeuren</button>
-          <button class="btn-reject" id="rejectBtn">Aanvraag weigeren</button>
+          <button class="btn-available" id="availableBtn">Ik ben beschikbaar</button>
+          <button class="btn-unavailable" id="unavailableBtn">Ik kan niet</button>
+          <button class="btn-swap" id="swapBtn">Ik zoek vervanging</button>
         </div>
-        <div class="small-note">Deze knoppen zijn enkel zichtbaar voor admins.</div>
+
+        <div id="adminActions" class="admin-actions" style="display:none;">
+          <div class="admin-actions-title">Admin acties</div>
+          <div class="modal-actions">
+            <button class="btn-approve" id="approveBtn">Aanvraag goedkeuren</button>
+            <button class="btn-reject" id="rejectBtn">Aanvraag weigeren</button>
+          </div>
+          <div class="small-note">Deze knoppen zijn enkel zichtbaar voor admins.</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal voor nieuwe datum -->
-<div id="datumModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>📅 Datum toevoegen</h3>
-      <button class="close-x" onclick="closeDatumModal()">X</button>
-    </div>
-    <div class="modal-body">
-      <label for="nieuweDatum">Datum</label>
-      <input type="date" id="nieuweDatum">
-      <label for="nieuweTijd">Tijdstip</label>
-      <input type="time" id="nieuweTijd">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
-      <button class="close-x" onclick="closeDatumModal()">Annuleren</button>
+  <div id="datumModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📅 Datum toevoegen</h3>
+        <button class="close-x" id="closeDatumModalBtn">X</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-group">
+          <label for="nieuweDatum">Datum</label>
+          <input type="date" id="nieuweDatum">
+        </div>
+
+        <div class="field-group">
+          <label for="nieuweTijd">Tijdstip</label>
+          <input type="time" id="nieuweTijd">
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-approve" id="saveDateBtn">Opslaan</button>
+          <button class="btn-reject" id="cancelDateBtn">Annuleren</button>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 
-<script>
-const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let calendar = null;
-let posten = [];
+    let currentUser = null;
+    let currentProfile = null;
+    let selectedEvent = null;
+    let availabilityCheckboxes = [];
+    let calendar = null;
+    let realtimeChannels = [];
+    let posten = [];
 
-document.addEventListener("DOMContentLoaded", async () => {
-  bindButtons();
-  await laadPosten();
-  bouwLegend();
-  startCalendar();
-  await loadEvents();
-});
+    document.addEventListener("DOMContentLoaded", async () => {
+      bindButtons();
+      startCalendar();
+      await initPage();
+    });
 
-function bindButtons() {
-  document.getElementById("refreshBtn").addEventListener("click", async () => await loadEvents(document.getElementById("filterPost").value));
-  window.addEventListener("click", e => { if(e.target === document.getElementById("datumModal")) closeDatumModal(); });
-}
+    function bindButtons() {
+      document.getElementById("logoutBtn").addEventListener("click", logout);
 
-async function laadPosten() {
-  const { data, error } = await client.from("posten").select("*").order("id",{ascending:true});
-  if(error) { console.error("Fout bij laden posten:", error); return; }
-  posten = data;
+      document.getElementById("refreshBtn").addEventListener("click", async () => {
+        await refreshAll();
+      });
 
-  const filterSelect = document.getElementById("filterPost");
-  filterSelect.innerHTML = '<option value="">Alle posten</option>';
-  posten.forEach(post => {
-    const opt = document.createElement("option");
-    opt.value = post.naam;
-    opt.textContent = post.naam;
-    filterSelect.appendChild(opt);
-  });
+      document.getElementById("saveAvailabilityBtn").addEventListener("click", opslaanBeschikbaarheid);
 
-  filterSelect.addEventListener("change", async () => { await loadEvents(filterSelect.value); });
-}
+      document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+      document.getElementById("availableBtn").addEventListener("click", () => setBeschikbaarheidEvent(true));
+      document.getElementById("unavailableBtn").addEventListener("click", () => setBeschikbaarheidEvent(false));
+      document.getElementById("swapBtn").addEventListener("click", vraagRuil);
+      document.getElementById("approveBtn").addEventListener("click", () => updateStatusAanvraag("Goedgekeurd"));
+      document.getElementById("rejectBtn").addEventListener("click", () => updateStatusAanvraag("Geweigerd"));
 
-function bouwLegend() {
-  const legend = document.getElementById("legend");
-  legend.innerHTML = "";
-  posten.forEach(post => {
-    const div = document.createElement("div");
-    div.className = "legend-item";
-    div.innerHTML = `<span class="legend-color" style="background:${post.kleur}"></span>${post.naam}`;
-    legend.appendChild(div);
-  });
-}
+      document.getElementById("adminBtn").addEventListener("click", () => {
+        window.location.href = "admin.html";
+      });
 
-function startCalendar() {
-  const calendarEl = document.getElementById('calendar');
-  calendar = new FullCalendar.Calendar(calendarEl, { initialView: 'dayGridMonth', locale: 'nl', height: 600 });
-  calendar.render();
-}
+      document.getElementById("openDateModalBtn").addEventListener("click", openDatumModal);
+      document.getElementById("closeDatumModalBtn").addEventListener("click", closeDatumModal);
+      document.getElementById("cancelDateBtn").addEventListener("click", closeDatumModal);
+      document.getElementById("saveDateBtn").addEventListener("click", opslaanDatum);
 
-async function loadEvents(postFilter = "") {
-  if(!calendar) return;
+      document.getElementById("filterPost").addEventListener("change", async () => {
+        await loadEvents(document.getElementById("filterPost").value);
+      });
 
-  let query = client.from("aanvragen").select("*").eq("status","Goedgekeurd").order("datum",{ascending:true}).order("tijd",{ascending:true});
-  if(postFilter) query = query.eq("post_naam", postFilter);
+      window.addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modal")) closeModal();
+        if (e.target === document.getElementById("datumModal")) closeDatumModal();
+      });
+    }
 
-  const { data, error } = await query;
-  if(error) { console.error("Fout bij laden aanvragen:", error); return; }
+    async function initPage() {
+      const { data: authData, error: authError } = await client.auth.getUser();
 
-  calendar.removeAllEvents();
+      if (authError || !authData?.user) {
+        window.location.href = "login.html";
+        return;
+      }
 
-  data?.forEach(item => {
-    if(!item.datum || !item.tijd) return;
-    const datum_tijd = `${item.datum}T${item.tijd}`;
-    const post = posten.find(p => p.id === item.post_nummer) || posten[0];
-    calendar.addEvent({ id: String(item.id), title: `${post?.icoon||"🚒"} ${item.school||"Bezoek"}`, start: datum_tijd, color: post?.kleur || "#000000" });
-  });
-}
+      currentUser = authData.user;
 
-// Datum modal functies
-function openDatumModal(){ document.getElementById("datumModal").style.display="block"; }
-function closeDatumModal(){ document.getElementById("datumModal").style.display="none"; }
+      const { data: profile, error: profileError } = await client
+        .from("profiles")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
 
-async function opslaanDatum(){
-  const datum = document.getElementById("nieuweDatum").value;
-  const tijd = document.getElementById("nieuweTijd").value;
-  if(!datum || !tijd){ alert("Vul datum en tijd in"); return; }
-  try{
-    const { error } = await client.from("beschikbare_datums").insert([{datum,tijd,datum_tijd:`${datum} ${tijd}`}]);
-    if(error) throw error;
-    alert("Datum toegevoegd!");
-    document.getElementById("nieuweDatum").value="";
-    document.getElementById("nieuweTijd").value="";
-    closeDatumModal();
-    await loadEvents();
-  }catch(err){ console.error(err); alert("Fout: "+err.message); }
-}
-</script>
+      if (profileError || !profile) {
+        alert("Profiel niet gevonden.");
+        window.location.href = "login.html";
+        return;
+      }
 
+      currentProfile = profile;
+
+      document.getElementById("welcome").textContent =
+        `Welkom, ${profile.name || profile.email || "gebruiker"}!`;
+
+      if (profile.is_admin) {
+        document.getElementById("adminBtn").style.display = "inline-block";
+        document.getElementById("openDateModalBtn").style.display = "inline-block";
+        document.getElementById("adminActions").style.display = "block";
+      }
+
+      await laadPosten();
+      bouwLegend();
+      vulPostFilter();
+      await refreshAll();
+      startRealtime();
+    }
+
+    async function laadPosten() {
+      const { data, error } = await client
+        .from("posten")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error("Fout bij laden posten:", error);
+        posten = [
+          { id: 1, naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
+          { id: 2, naam: "Post Geel", kleur: "#3cb44b", icoon: "🧯" },
+          { id: 3, naam: "Post Grobbendonk", kleur: "#ffe119", icoon: "🔥" },
+          { id: 4, naam: "Post Herentals", kleur: "#4363d8", icoon: "🚨" },
+          { id: 5, naam: "Post Herenthout", kleur: "#f58231", icoon: "🏫" },
+          { id: 6, naam: "Post Mol", kleur: "#911eb4", icoon: "📟" },
+          { id: 7, naam: "Post Westerlo", kleur: "#46f0f0", icoon: "📞" }
+        ];
+        return;
+      }
+
+      posten = data || [];
+    }
+
+    function bouwLegend() {
+      const legend = document.getElementById("legend");
+      legend.innerHTML = "";
+
+      posten.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "legend-item";
+        div.innerHTML = `
+          <span class="legend-color" style="background:${post.kleur || "#999"}"></span>
+          ${post.icoon || "📍"} ${post.naam || "Onbekende post"}
+        `;
+        legend.appendChild(div);
+      });
+    }
+
+    function vulPostFilter() {
+      const filterSelect = document.getElementById("filterPost");
+      const huidigeWaarde = filterSelect.value;
+
+      filterSelect.innerHTML = `<option value="">Alle posten</option>`;
+
+      posten.forEach(post => {
+        const opt = document.createElement("option");
+        opt.value = String(post.id);
+        opt.textContent = `${post.icoon || "📍"} ${post.naam}`;
+        filterSelect.appendChild(opt);
+      });
+
+      filterSelect.value = huidigeWaarde || "";
+    }
+
+    function startCalendar() {
+      const calendarEl = document.getElementById("calendar");
+
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "nl",
+        height: 650,
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,listMonth"
+        },
+        buttonText: {
+          today: "Vandaag",
+          month: "Maand",
+          week: "Week",
+          list: "Lijst"
+        },
+        eventClick: function(info) {
+          openEventModal(info.event);
+        }
+      });
+
+      calendar.render();
+    }
+
+    async function refreshAll() {
+      const selectedPostId = document.getElementById("filterPost").value;
+      await loadEvents(selectedPostId);
+      await laadBeschikbaarheidSlots();
+    }
+
+    async function loadEvents(postFilter = "") {
+      let query = client
+        .from("aanvragen")
+        .select(`
+          *,
+          posten:post_id (
+            id,
+            naam,
+            kleur,
+            icoon
+          )
+        `)
+        .eq("status", "Goedgekeurd")
+        .order("datum_tijd", { ascending: true });
+
+      if (postFilter) {
+        query = query.eq("post_id", Number(postFilter));
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Fout bij laden aanvragen:", error);
+        return;
+      }
+
+      calendar.removeAllEvents();
+
+      if (!data || data.length === 0) {
+        return;
+      }
+
+      data.forEach(item => {
+        const post = item.posten || posten.find(p => p.id === item.post_id) || null;
+        const startDatum = item.datum_tijd || parseDatumString(item.datum);
+
+        if (!startDatum) return;
+
+        calendar.addEvent({
+          id: String(item.id),
+          title: `${post?.icoon || "🔥"} ${item.school || "Bezoek"}`,
+          start: startDatum,
+          color: post?.kleur || "#ff6a00",
+          extendedProps: {
+            ...item,
+            postNaam: post?.naam || "Onbekende post",
+            postKleur: post?.kleur || "#ff6a00",
+            postIcoon: post?.icoon || "🔥"
+          }
+        });
+      });
+    }
+
+    function parseDatumString(datumString) {
+      if (!datumString) return null;
+
+      if (datumString.includes("T")) return datumString;
+
+      const match = datumString.match(/^(\d{4}-\d{2}-\d{2})[ ](\d{2}:\d{2})(:\d{2})?$/);
+      if (match) {
+        return `${match[1]}T${match[2]}:00`;
+      }
+
+      return null;
+    }
+
+    async function laadBeschikbaarheidSlots() {
+      const container = document.getElementById("beschikbaarheidContainer");
+      const loading = document.getElementById("loadingSlots");
+
+      container.innerHTML = "";
+      loading.textContent = "Beschikbare datums laden...";
+      availabilityCheckboxes = [];
+
+      const { data: datums, error: datumsError } = await client
+        .from("beschikbare_datums")
+        .select("*")
+        .order("datum", { ascending: true });
+
+      if (datumsError) {
+        console.error("Fout bij laden beschikbare datums:", datumsError);
+        loading.textContent = "Fout bij laden van de beschikbare datums.";
+        return;
+      }
+
+      const { data: beschikbaarheidData, error: beschikbaarheidError } = await client
+        .from("beschikbaarheid")
+        .select("*")
+        .eq("user_email", currentProfile.email);
+
+      if (beschikbaarheidError) {
+        console.error("Fout bij laden beschikbaarheid:", beschikbaarheidError);
+        loading.textContent = "Fout bij laden van je beschikbaarheid.";
+        return;
+      }
+
+      const { data: alleBeschikbaarheden, error: alleError } = await client
+        .from("beschikbaarheid")
+        .select("datum, aanwezig");
+
+      if (alleError) {
+        console.error("Fout bij tellen bezetting:", alleError);
+      }
+
+      const userBeschikbaarheid = beschikbaarheidData || [];
+      const alleRows = alleBeschikbaarheden || [];
+
+      if (!datums || datums.length === 0) {
+        loading.textContent = "Er zijn nog geen datums toegevoegd.";
+        return;
+      }
+
+      datums.forEach(slot => {
+        const datumLabel = maakDatumLabel(slot);
+        const datumKey = slot.datum_tijd || `${slot.datum} ${slot.tijd}`;
+
+        const isChecked = userBeschikbaarheid.some(
+          b => b.datum === datumKey && b.aanwezig === true
+        );
+
+        const aantalAanwezig = alleRows.filter(
+          b => b.datum === datumKey && b.aanwezig === true
+        ).length;
+
+        let slotClass = "empty";
+        if (aantalAanwezig >= 2) slotClass = "full";
+        else if (aantalAanwezig === 1) slotClass = "partial";
+
+        const slotDiv = document.createElement("div");
+        slotDiv.className = `slot ${slotClass}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = isChecked;
+        checkbox.dataset.datum = datumKey;
+
+        const label = document.createElement("div");
+        label.className = "slot-label";
+        label.textContent = datumLabel;
+
+        const count = document.createElement("div");
+        count.className = "slot-count";
+        count.textContent = `${aantalAanwezig}/2 bezet`;
+
+        slotDiv.appendChild(checkbox);
+        slotDiv.appendChild(label);
+        slotDiv.appendChild(count);
+        container.appendChild(slotDiv);
+
+        availabilityCheckboxes.push({
+          checkbox,
+          datum: datumKey
+        });
+      });
+
+      loading.textContent = "";
+    }
+
+    function maakDatumLabel(slot) {
+      if (slot.datum_tijd) {
+        return slot.datum_tijd.replace("T", " ");
+      }
+      if (slot.datum && slot.tijd) {
+        return `${slot.datum} ${slot.tijd}`;
+      }
+      return slot.datum || "Onbekende datum";
+    }
+
+    async function opslaanBeschikbaarheid() {
+      if (!currentProfile?.email) {
+        alert("Gebruiker niet correct geladen.");
+        return;
+      }
+
+      const { error: deleteError } = await client
+        .from("beschikbaarheid")
+        .delete()
+        .eq("user_email", currentProfile.email);
+
+      if (deleteError) {
+        alert("Fout bij verwijderen oude beschikbaarheid: " + deleteError.message);
+        return;
+      }
+
+      const nieuweRows = availabilityCheckboxes
+        .filter(item => item.checkbox.checked)
+        .map(item => ({
+          user_id: currentProfile.user_id,
+          user_name: currentProfile.name || currentProfile.email,
+          user_email: currentProfile.email,
+          datum: item.datum,
+          aanwezig: true,
+          ruil_gevraagd: false
+        }));
+
+      if (nieuweRows.length > 0) {
+        const { error: insertError } = await client
+          .from("beschikbaarheid")
+          .insert(nieuweRows);
+
+        if (insertError) {
+          alert("Fout bij opslaan: " + insertError.message);
+          return;
+        }
+      }
+
+      alert("Beschikbaarheid opgeslagen.");
+      await laadBeschikbaarheidSlots();
+    }
+
+    function openEventModal(event) {
+      selectedEvent = event;
+
+      const props = event.extendedProps || {};
+
+      document.getElementById("eventDetails").innerHTML = `
+        <div class="info-item"><strong>School</strong>${props.school || "-"}</div>
+        <div class="info-item"><strong>Post</strong>${props.postIcoon || ""} ${props.postNaam || "-"}</div>
+        <div class="info-item"><strong>Datum</strong>${formatDateTime(event.start)}</div>
+        <div class="info-item"><strong>Status</strong>${props.status || "-"}</div>
+      `;
+
+      document.getElementById("bezettingBox").innerHTML =
+        `Event geselecteerd voor <strong>${props.school || "bezoek"}</strong>.`;
+
+      document.getElementById("userStateBox").innerHTML =
+        `Hier kun je je aanwezigheid voor dit event beheren.`;
+
+      document.getElementById("modal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      selectedEvent = null;
+    }
+
+    function formatDateTime(date) {
+      if (!date) return "-";
+      return new Date(date).toLocaleString("nl-BE");
+    }
+
+    async function setBeschikbaarheidEvent(isAanwezig) {
+      if (!selectedEvent || !currentProfile) return;
+
+      const datum = selectedEvent.startStr;
+
+      await client
+        .from("beschikbaarheid")
+        .delete()
+        .eq("user_email", currentProfile.email)
+        .eq("datum", datum);
+
+      if (isAanwezig) {
+        const { error } = await client
+          .from("beschikbaarheid")
+          .insert([{
+            user_id: currentProfile.user_id,
+            user_name: currentProfile.name || currentProfile.email,
+            user_email: currentProfile.email,
+            datum: datum,
+            aanwezig: true,
+            ruil_gevraagd: false
+          }]);
+
+        if (error) {
+          alert("Fout bij opslaan: " + error.message);
+          return;
+        }
+      }
+
+      alert(isAanwezig ? "Je bent als beschikbaar opgeslagen." : "Je werd verwijderd van dit event.");
+      closeModal();
+      await laadBeschikbaarheidSlots();
+    }
+
+    async function vraagRuil() {
+      if (!selectedEvent || !currentProfile) return;
+
+      const datum = selectedEvent.startStr;
+
+      const { error } = await client
+        .from("beschikbaarheid")
+        .upsert([{
+          user_id: currentProfile.user_id,
+          user_name: currentProfile.name || currentProfile.email,
+          user_email: currentProfile.email,
+          datum: datum,
+          aanwezig: true,
+          ruil_gevraagd: true
+        }], {
+          onConflict: "user_email,datum"
+        });
+
+      if (error) {
+        alert("Fout bij aanvragen vervanging: " + error.message);
+        return;
+      }
+
+      alert("Vervanging gevraagd.");
+      closeModal();
+      await laadBeschikbaarheidSlots();
+    }
+
+    async function updateStatusAanvraag(status) {
+      if (!currentProfile?.is_admin || !selectedEvent) return;
+
+      const { error } = await client
+        .from("aanvragen")
+        .update({ status })
+        .eq("id", selectedEvent.id);
+
+      if (error) {
+        alert("Fout bij aanpassen status: " + error.message);
+        return;
+      }
+
+      alert("Status aangepast naar: " + status);
+      closeModal();
+      await loadEvents(document.getElementById("filterPost").value);
+    }
+
+    function openDatumModal() {
+      document.getElementById("datumModal").style.display = "block";
+    }
+
+    function closeDatumModal() {
+      document.getElementById("datumModal").style.display = "none";
+    }
+
+    async function opslaanDatum() {
+      if (!currentProfile?.is_admin) {
+        alert("Alleen admins mogen datums toevoegen.");
+        return;
+      }
+
+      const datum = document.getElementById("nieuweDatum").value;
+      const tijd = document.getElementById("nieuweTijd").value;
+
+      if (!datum || !tijd) {
+        alert("Vul datum en tijd in.");
+        return;
+      }
+
+      const datum_tijd = `${datum}T${tijd}:00`;
+
+      const { data: bestaand, error: checkError } = await client
+        .from("beschikbare_datums")
+        .select("id")
+        .eq("datum_tijd", datum_tijd)
+        .maybeSingle();
+
+      if (checkError) {
+        alert("Fout bij controle: " + checkError.message);
+        return;
+      }
+
+      if (bestaand) {
+        alert("Deze datum en tijd bestaan al.");
+        return;
+      }
+
+      const { error } = await client
+        .from("beschikbare_datums")
+        .insert([{
+          datum,
+          tijd,
+          datum_tijd
+        }]);
+
+      if (error) {
+        alert("Fout bij opslaan: " + error.message);
+        return;
+      }
+
+      alert("Datum toegevoegd.");
+      document.getElementById("nieuweDatum").value = "";
+      document.getElementById("nieuweTijd").value = "";
+      closeDatumModal();
+      await laadBeschikbaarheidSlots();
+    }
+
+    function startRealtime() {
+      realtimeChannels.forEach(ch => client.removeChannel(ch));
+      realtimeChannels = [];
+
+      const ch1 = client
+        .channel("dashboard-aanvragen")
+        .on("postgres_changes", { event: "*", schema: "public", table: "aanvragen" }, async () => {
+          await loadEvents(document.getElementById("filterPost").value);
+        })
+        .subscribe();
+
+      const ch2 = client
+        .channel("dashboard-beschikbaarheid")
+        .on("postgres_changes", { event: "*", schema: "public", table: "beschikbaarheid" }, async () => {
+          await laadBeschikbaarheidSlots();
+        })
+        .subscribe();
+
+      const ch3 = client
+        .channel("dashboard-datums")
+        .on("postgres_changes", { event: "*", schema: "public", table: "beschikbare_datums" }, async () => {
+          await laadBeschikbaarheidSlots();
+        })
+        .subscribe();
+
+      realtimeChannels.push(ch1, ch2, ch3);
+    }
+
+    async function logout() {
+      await client.auth.signOut();
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
