@@ -162,9 +162,11 @@
       <div id="beschikbaarheidContainer"></div>
       <button id="saveAvailabilityBtn" class="primary-btn" style="margin-top:16px;">Beschikbaarheid opslaan</button>
       <div id="loadingSlots" class="loading-note"></div>
+      <button class="primary-btn" style="margin-top:16px;" onclick="openDatumModal()">➕ Nieuwe datum toevoegen</button>
     </div>
   </div>
 
+  <!-- Modal voor Event Details -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -192,6 +194,26 @@
     </div>
   </div>
 
+  <!-- Modal voor nieuwe datum -->
+  <div id="datumModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📅 Datum toevoegen</h3>
+        <button class="close-x" onclick="closeDatumModal()">X</button>
+      </div>
+      <div class="modal-body">
+        <label for="nieuweDatum">Datum</label>
+        <input type="date" id="nieuweDatum">
+        <label for="nieuweTijd">Tijdstip</label>
+        <input type="time" id="nieuweTijd">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
+        <button class="close-x" onclick="closeDatumModal()">Annuleren</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
@@ -201,12 +223,7 @@
     const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentUser = null;
-    let currentProfile = null;
-    let selectedEvent = null;
-    let availabilityCheckboxes = [];
     let calendar = null;
-    let realtimeChannels = [];
 
     const posten = [
       { naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
@@ -223,27 +240,13 @@
       bouwLegend();
       startCalendar();
       vulPostFilter();
-      await initPage();
+      await loadEvents();
     });
 
     function bindButtons() {
-      document.getElementById("logoutBtn").addEventListener("click", logout);
-      document.getElementById("refreshBtn").addEventListener("click", async () => {
-        const filterValue = document.getElementById("filterPost").value;
-        await loadEvents(filterValue);
-        await laadBeschikbaarheidSlots();
-      });
-      document.getElementById("saveAvailabilityBtn").addEventListener("click", opslaanBeschikbaarheid);
-      document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-      document.getElementById("availableBtn").addEventListener("click", () => setBeschikbaarheidEvent(true));
-      document.getElementById("unavailableBtn").addEventListener("click", () => setBeschikbaarheidEvent(false));
-      document.getElementById("swapBtn").addEventListener("click", vraagRuil);
-      document.getElementById("approveBtn").addEventListener("click", () => updateStatusAanvraag("Goedgekeurd"));
-      document.getElementById("rejectBtn").addEventListener("click", () => updateStatusAanvraag("Geweigerd"));
-      document.getElementById("adminBtn").addEventListener("click", () => { window.location.href = "admin.html"; });
-
-      window.addEventListener("click", (e) => {
-        if (e.target === document.getElementById("modal")) closeModal();
+      document.getElementById("refreshBtn").addEventListener("click", async () => await loadEvents(document.getElementById("filterPost").value));
+      window.addEventListener("click", e => {
+        if(e.target === document.getElementById("datumModal")) closeDatumModal();
       });
     }
 
@@ -255,43 +258,69 @@
         opt.textContent = post.naam;
         filterSelect.appendChild(opt);
       });
-
       filterSelect.addEventListener("change", async () => {
         await loadEvents(filterSelect.value);
       });
     }
 
-    // ... (houd al je bestaande functies zoals startCalendar, bouwLegend, initPage, enz. gelijk)
-    // Pas loadEvents aan:
+    function bouwLegend() {
+      const legend = document.getElementById("legend");
+      posten.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "legend-item";
+        div.innerHTML = `<span class="legend-color" style="background:${post.kleur}"></span>${post.naam}`;
+        legend.appendChild(div);
+      });
+    }
+
+    function startCalendar() {
+      const calendarEl = document.getElementById('calendar');
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'nl',
+        height: 600
+      });
+      calendar.render();
+    }
+
     async function loadEvents(postFilter = "") {
-      let query = client
-        .from("aanvragen")
-        .select("*")
-        .eq("status", "Goedgekeurd")
-        .order("datum_tijd", { ascending: true });
-
-      if (postFilter) query = query.eq("post_naam", postFilter);
-
+      let query = client.from("aanvragen").select("*").eq("status","Goedgekeurd").order("datum_tijd",{ascending:true});
+      if(postFilter) query = query.eq("post_naam", postFilter);
       const { data, error } = await query;
-      if (error) { console.error("Fout bij laden aanvragen:", error); return; }
-
+      if(error) { console.error(error); return; }
       calendar.removeAllEvents();
-      if (!data || data.length === 0) return;
-
-      data.forEach(item => {
-        if (!item.datum_tijd) return;
-        const postIndex = ((item.post_nummer || 1) - 1);
-        const post = posten[postIndex] || posten[0];
-
+      data?.forEach(item => {
+        if(!item.datum_tijd) return;
+        const postIndex = (item.post_nummer||1)-1;
+        const post = posten[postIndex]||posten[0];
         calendar.addEvent({
           id: String(item.id),
-          title: `${post.icoon} ${item.school || "Bezoek"}`,
+          title: `${post.icoon} ${item.school||"Bezoek"}`,
           start: item.datum_tijd,
-          color: post.kleur,
-          extendedProps: { ...item, postNaam: post.naam, postIcoon: post.icoon }
+          color: post.kleur
         });
       });
     }
+
+    // Datum modal functies
+    function openDatumModal(){ document.getElementById("datumModal").style.display="block"; }
+    function closeDatumModal(){ document.getElementById("datumModal").style.display="none"; }
+
+    async function opslaanDatum(){
+      const datum = document.getElementById("nieuweDatum").value;
+      const tijd = document.getElementById("nieuweTijd").value;
+      if(!datum || !tijd){ alert("Vul datum en tijd in"); return; }
+      const datum_tijd = `${datum} ${tijd}`;
+      try{
+        const { error } = await client.from("beschikbare_datums").insert([{datum,tijd,datum_tijd}]);
+        if(error) throw error;
+        alert("Datum toegevoegd!");
+        document.getElementById("nieuweDatum").value="";
+        document.getElementById("nieuweTijd").value="";
+        closeDatumModal();
+      }catch(err){ console.error(err); alert("Fout: "+err.message); }
+    }
+
   </script>
 </body>
 </html>
