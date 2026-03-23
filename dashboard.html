@@ -9,88 +9,26 @@
 
   <style>
     * { box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: linear-gradient(160deg, #ff6a00, #ffb347);
-      min-height: 100vh;
-    }
-
-    header {
-      background: #c71f1f;
-      color: white;
-      padding: 18px 20px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: 700;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .main {
-      max-width: 1250px;
-      margin: 24px auto;
-      padding: 24px;
-      background: rgba(255,255,255,0.16);
-      backdrop-filter: blur(10px);
-      border-radius: 24px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background: linear-gradient(160deg, #ff6a00, #ffb347); min-height: 100vh; }
+    header { background: #c71f1f; color: white; padding: 18px 20px; text-align: center; font-size: 24px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .main { max-width: 1250px; margin: 24px auto; padding: 24px; background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 24px; box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
     #welcome { color: white; font-size: 20px; font-weight: 600; }
-
-    .topbar-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    select {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    button {
-      border: none;
-      border-radius: 16px;
-      padding: 11px 16px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
+    .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    select { padding: 8px 10px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; }
+    button { border: none; border-radius: 16px; padding: 11px 16px; cursor: pointer; font-size: 14px; font-weight: 600; transition: transform 0.2s ease, opacity 0.2s ease; }
     button:hover { transform: scale(1.03); }
-
     .primary-btn { background: white; color: #ff6a00; }
     .secondary-btn { background: #c71f1f; color: white; }
     .logout-btn { background: #444; color: white; }
-
     #legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 18px 0; }
     .legend-item { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.25); color: white; padding: 7px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; }
     .legend-color { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.7); }
-
     .calendar-wrap { background: white; border-radius: 18px; padding: 14px; box-shadow: 0 8px 18px rgba(0,0,0,0.08); margin-bottom: 24px; }
-
     .section { margin-top: 24px; background: rgba(255,255,255,0.16); border-radius: 20px; padding: 20px; }
     .section h3 { margin-top: 0; color: white; font-size: 20px; }
     .section-note { color: rgba(255,255,255,0.9); font-size: 14px; margin-top: -8px; margin-bottom: 16px; }
-
     #beschikbaarheidContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-
     .slot { background: rgba(255,255,255,0.92); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 50px; }
     .slot input[type="checkbox"] { transform: scale(1.15); cursor: pointer; }
     .slot.full { opacity: 0.75; border-left: 5px solid #2e7d32; }
@@ -98,7 +36,6 @@
     .slot.empty { border-left: 5px solid #c71f1f; }
     .slot-label { flex: 1; }
     .slot-count { font-size: 12px; color: #555; font-weight: 700; white-space: nowrap; }
-
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; padding: 20px; overflow-y: auto; }
     .modal-content { background: white; max-width: 620px; margin: 50px auto; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
     .modal-header { background: #c71f1f; color: white; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -108,10 +45,8 @@
     .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 16px; }
     .info-item { background: #f7f7f7; border-radius: 14px; padding: 12px; font-size: 14px; }
     .info-item strong { display: block; margin-bottom: 4px; color: #333; }
-
     .status-box, .user-state { padding: 14px; border-radius: 14px; background: #fff7ef; margin-bottom: 16px; font-size: 14px; line-height: 1.5; }
     .user-state { background: #f2f6ff; }
-
     .modal-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .btn-available { background: #2e7d32; color: white; }
     .btn-unavailable { background: #757575; color: white; }
@@ -122,205 +57,188 @@
     .btn-reject { background: #c71f1f; color: white; }
     .small-note { font-size: 12px; color: #666; margin-top: 10px; }
     .loading-note { color: white; font-size: 14px; margin-top: 8px; }
-
-    @media (max-width: 700px) {
-      .info-grid { grid-template-columns: 1fr; }
-      .main { margin: 12px; padding: 16px; }
-      .modal-content { margin: 10px auto; }
-    }
+    @media (max-width: 700px) { .info-grid { grid-template-columns: 1fr; } .main { margin: 12px; padding: 16px; } .modal-content { margin: 10px auto; } }
   </style>
 </head>
 <body>
 
-  <header>🔥 Dashboard Bezoekaanvragen</header>
+<header>🔥 Dashboard Bezoekaanvragen</header>
 
-  <div class="main">
-    <div class="topbar">
-      <div id="welcome">Welkom!</div>
-      <div class="topbar-actions">
-        <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
-        <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
-        <button id="logoutBtn" class="logout-btn">Logout</button>
-        <label for="filterPost" style="color:white;font-weight:600;">Filter per post:</label>
-        <select id="filterPost">
-          <option value="">Alle posten</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="legend"></div>
-
-    <div class="calendar-wrap">
-      <div id="calendar"></div>
-    </div>
-
-    <div class="section">
-      <h3>📅 Algemene beschikbaarheid</h3>
-      <div class="section-note">
-        Hier kun je je op voorhand beschikbaar zetten. Per evenement zijn 2 personen nodig.
-      </div>
-      <div id="beschikbaarheidContainer"></div>
-      <button id="saveAvailabilityBtn" class="primary-btn" style="margin-top:16px;">Beschikbaarheid opslaan</button>
-      <div id="loadingSlots" class="loading-note"></div>
-      <button class="primary-btn" style="margin-top:16px;" onclick="openDatumModal()">➕ Nieuwe datum toevoegen</button>
+<div class="main">
+  <div class="topbar">
+    <div id="welcome">Welkom!</div>
+    <div class="topbar-actions">
+      <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
+      <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+      <label for="filterPost" style="color:white;font-weight:600;">Filter per post:</label>
+      <select id="filterPost"><option value="">Alle posten</option></select>
     </div>
   </div>
 
-  <!-- Modal voor Event Details -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Details bezoek</h3>
-        <button class="close-x" id="closeModalBtn">X</button>
-      </div>
-      <div class="modal-body">
-        <div id="eventDetails" class="info-grid"></div>
-        <div id="bezettingBox" class="status-box"></div>
-        <div id="userStateBox" class="user-state"></div>
-        <div class="modal-actions">
-          <button class="btn-available" id="availableBtn">Ik ben beschikbaar</button>
-          <button class="btn-unavailable" id="unavailableBtn">Ik kan niet</button>
-          <button class="btn-swap" id="swapBtn">Ik zoek vervanging</button>
-        </div>
-        <div id="adminActions" class="admin-actions" style="display:none;">
-          <div class="admin-actions-title">Admin acties</div>
-          <div class="modal-actions">
-            <button class="btn-approve" id="approveBtn">Aanvraag goedkeuren</button>
-            <button class="btn-reject" id="rejectBtn">Aanvraag weigeren</button>
-          </div>
-          <div class="small-note">Deze knoppen zijn enkel zichtbaar voor admins.</div>
-        </div>
-      </div>
-    </div>
+  <div id="legend"></div>
+
+  <div class="calendar-wrap">
+    <div id="calendar"></div>
   </div>
 
-  <!-- Modal voor nieuwe datum -->
-  <div id="datumModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>📅 Datum toevoegen</h3>
-        <button class="close-x" onclick="closeDatumModal()">X</button>
-      </div>
-      <div class="modal-body">
-        <label for="nieuweDatum">Datum</label>
-        <input type="date" id="nieuweDatum">
-        <label for="nieuweTijd">Tijdstip</label>
-        <input type="time" id="nieuweTijd">
-      </div>
+  <div class="section">
+    <h3>📅 Algemene beschikbaarheid</h3>
+    <div class="section-note">
+      Hier kun je je op voorhand beschikbaar zetten. Per evenement zijn 2 personen nodig.
+    </div>
+    <div id="beschikbaarheidContainer"></div>
+    <button id="saveAvailabilityBtn" class="primary-btn" style="margin-top:16px;">Beschikbaarheid opslaan</button>
+    <div id="loadingSlots" class="loading-note"></div>
+    <button class="primary-btn" style="margin-top:16px;" onclick="openDatumModal()">➕ Nieuwe datum toevoegen</button>
+  </div>
+</div>
+
+<!-- Modal voor Event Details -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Details bezoek</h3>
+      <button class="close-x" id="closeModalBtn">X</button>
+    </div>
+    <div class="modal-body">
+      <div id="eventDetails" class="info-grid"></div>
+      <div id="bezettingBox" class="status-box"></div>
+      <div id="userStateBox" class="user-state"></div>
       <div class="modal-actions">
-        <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
-        <button class="close-x" onclick="closeDatumModal()">Annuleren</button>
+        <button class="btn-available" id="availableBtn">Ik ben beschikbaar</button>
+        <button class="btn-unavailable" id="unavailableBtn">Ik kan niet</button>
+        <button class="btn-swap" id="swapBtn">Ik zoek vervanging</button>
+      </div>
+      <div id="adminActions" class="admin-actions" style="display:none;">
+        <div class="admin-actions-title">Admin acties</div>
+        <div class="modal-actions">
+          <button class="btn-approve" id="approveBtn">Aanvraag goedkeuren</button>
+          <button class="btn-reject" id="rejectBtn">Aanvraag weigeren</button>
+        </div>
+        <div class="small-note">Deze knoppen zijn enkel zichtbaar voor admins.</div>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
+<!-- Modal voor nieuwe datum -->
+<div id="datumModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📅 Datum toevoegen</h3>
+      <button class="close-x" onclick="closeDatumModal()">X</button>
+    </div>
+    <div class="modal-body">
+      <label for="nieuweDatum">Datum</label>
+      <input type="date" id="nieuweDatum">
+      <label for="nieuweTijd">Tijdstip</label>
+      <input type="time" id="nieuweTijd">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
+      <button class="close-x" onclick="closeDatumModal()">Annuleren</button>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 
-    let calendar = null;
+<script>
+const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const posten = [
-      { naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
-      { naam: "Post Geel", kleur: "#3cb44b", icoon: "🧯" },
-      { naam: "Post Grobbendonk", kleur: "#ffe119", icoon: "🔥" },
-      { naam: "Post Herentals", kleur: "#4363d8", icoon: "🚨" },
-      { naam: "Post Herenthout", kleur: "#f58231", icoon: "🏫" },
-      { naam: "Post Mol", kleur: "#911eb4", icoon: "📟" },
-      { naam: "Post Westerlo", kleur: "#46f0f0", icoon: "📞" }
-    ];
+let calendar = null;
+let posten = [];
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      bindButtons();
-      bouwLegend();
-      startCalendar();
-      vulPostFilter();
-      await loadEvents();
-    });
+document.addEventListener("DOMContentLoaded", async () => {
+  bindButtons();
+  await laadPosten();
+  bouwLegend();
+  startCalendar();
+  await loadEvents();
+});
 
-    function bindButtons() {
-      document.getElementById("refreshBtn").addEventListener("click", async () => await loadEvents(document.getElementById("filterPost").value));
-      window.addEventListener("click", e => {
-        if(e.target === document.getElementById("datumModal")) closeDatumModal();
-      });
-    }
+function bindButtons() {
+  document.getElementById("refreshBtn").addEventListener("click", async () => await loadEvents(document.getElementById("filterPost").value));
+  window.addEventListener("click", e => { if(e.target === document.getElementById("datumModal")) closeDatumModal(); });
+}
 
-    function vulPostFilter() {
-      const filterSelect = document.getElementById("filterPost");
-      posten.forEach(post => {
-        const opt = document.createElement("option");
-        opt.value = post.naam;
-        opt.textContent = post.naam;
-        filterSelect.appendChild(opt);
-      });
-      filterSelect.addEventListener("change", async () => {
-        await loadEvents(filterSelect.value);
-      });
-    }
+async function laadPosten() {
+  const { data, error } = await client.from("posten").select("*").order("id",{ascending:true});
+  if(error) { console.error("Fout bij laden posten:", error); return; }
+  posten = data;
 
-    function bouwLegend() {
-      const legend = document.getElementById("legend");
-      posten.forEach(post => {
-        const div = document.createElement("div");
-        div.className = "legend-item";
-        div.innerHTML = `<span class="legend-color" style="background:${post.kleur}"></span>${post.naam}`;
-        legend.appendChild(div);
-      });
-    }
+  const filterSelect = document.getElementById("filterPost");
+  filterSelect.innerHTML = '<option value="">Alle posten</option>';
+  posten.forEach(post => {
+    const opt = document.createElement("option");
+    opt.value = post.naam;
+    opt.textContent = post.naam;
+    filterSelect.appendChild(opt);
+  });
 
-    function startCalendar() {
-      const calendarEl = document.getElementById('calendar');
-      calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'nl',
-        height: 600
-      });
-      calendar.render();
-    }
+  filterSelect.addEventListener("change", async () => { await loadEvents(filterSelect.value); });
+}
 
-    async function loadEvents(postFilter = "") {
-      let query = client.from("aanvragen").select("*").eq("status","Goedgekeurd").order("datum_tijd",{ascending:true});
-      if(postFilter) query = query.eq("post_naam", postFilter);
-      const { data, error } = await query;
-      if(error) { console.error(error); return; }
-      calendar.removeAllEvents();
-      data?.forEach(item => {
-        if(!item.datum_tijd) return;
-        const postIndex = (item.post_nummer||1)-1;
-        const post = posten[postIndex]||posten[0];
-        calendar.addEvent({
-          id: String(item.id),
-          title: `${post.icoon} ${item.school||"Bezoek"}`,
-          start: item.datum_tijd,
-          color: post.kleur
-        });
-      });
-    }
+function bouwLegend() {
+  const legend = document.getElementById("legend");
+  legend.innerHTML = "";
+  posten.forEach(post => {
+    const div = document.createElement("div");
+    div.className = "legend-item";
+    div.innerHTML = `<span class="legend-color" style="background:${post.kleur}"></span>${post.naam}`;
+    legend.appendChild(div);
+  });
+}
 
-    // Datum modal functies
-    function openDatumModal(){ document.getElementById("datumModal").style.display="block"; }
-    function closeDatumModal(){ document.getElementById("datumModal").style.display="none"; }
+function startCalendar() {
+  const calendarEl = document.getElementById('calendar');
+  calendar = new FullCalendar.Calendar(calendarEl, { initialView: 'dayGridMonth', locale: 'nl', height: 600 });
+  calendar.render();
+}
 
-    async function opslaanDatum(){
-      const datum = document.getElementById("nieuweDatum").value;
-      const tijd = document.getElementById("nieuweTijd").value;
-      if(!datum || !tijd){ alert("Vul datum en tijd in"); return; }
-      const datum_tijd = `${datum} ${tijd}`;
-      try{
-        const { error } = await client.from("beschikbare_datums").insert([{datum,tijd,datum_tijd}]);
-        if(error) throw error;
-        alert("Datum toegevoegd!");
-        document.getElementById("nieuweDatum").value="";
-        document.getElementById("nieuweTijd").value="";
-        closeDatumModal();
-      }catch(err){ console.error(err); alert("Fout: "+err.message); }
-    }
+async function loadEvents(postFilter = "") {
+  if(!calendar) return;
 
-  </script>
+  let query = client.from("aanvragen").select("*").eq("status","Goedgekeurd").order("datum",{ascending:true}).order("tijd",{ascending:true});
+  if(postFilter) query = query.eq("post_naam", postFilter);
+
+  const { data, error } = await query;
+  if(error) { console.error("Fout bij laden aanvragen:", error); return; }
+
+  calendar.removeAllEvents();
+
+  data?.forEach(item => {
+    if(!item.datum || !item.tijd) return;
+    const datum_tijd = `${item.datum}T${item.tijd}`;
+    const post = posten.find(p => p.id === item.post_nummer) || posten[0];
+    calendar.addEvent({ id: String(item.id), title: `${post?.icoon||"🚒"} ${item.school||"Bezoek"}`, start: datum_tijd, color: post?.kleur || "#000000" });
+  });
+}
+
+// Datum modal functies
+function openDatumModal(){ document.getElementById("datumModal").style.display="block"; }
+function closeDatumModal(){ document.getElementById("datumModal").style.display="none"; }
+
+async function opslaanDatum(){
+  const datum = document.getElementById("nieuweDatum").value;
+  const tijd = document.getElementById("nieuweTijd").value;
+  if(!datum || !tijd){ alert("Vul datum en tijd in"); return; }
+  try{
+    const { error } = await client.from("beschikbare_datums").insert([{datum,tijd,datum_tijd:`${datum} ${tijd}`}]);
+    if(error) throw error;
+    alert("Datum toegevoegd!");
+    document.getElementById("nieuweDatum").value="";
+    document.getElementById("nieuweTijd").value="";
+    closeDatumModal();
+    await loadEvents();
+  }catch(err){ console.error(err); alert("Fout: "+err.message); }
+}
+</script>
+
 </body>
 </html>
