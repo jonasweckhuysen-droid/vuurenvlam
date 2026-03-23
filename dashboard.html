@@ -36,27 +36,99 @@ header span.icon { font-size:26px; }
 }
 #welcome { font-size:18px; margin-bottom:10px; color:white; }
 #legend { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
-.legend-item { display:flex; align-items:center; gap:6px; padding:4px 8px; border-radius:12px; background:rgba(255,255,255,0.2); color:white; font-size:13px; }
+.legend-item {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 8px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.2);
+  color:white;
+  font-size:13px;
+}
 .legend-color { width:14px; height:14px; border-radius:50%; }
-#calendar { margin-top:10px; background:white; border-radius:15px; padding:10px; }
+#calendar {
+  margin-top:10px;
+  background:white;
+  border-radius:15px;
+  padding:10px;
+}
 .section { margin-top:25px; }
-.section h3 { color:white; display:flex; align-items:center; gap:8px; }
+.section h3 {
+  color:white;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
 .section h3 span.icon { font-size:20px; }
-#beschikbaarheidContainer .slot { margin:5px 0; background:rgba(255,255,255,0.9); padding:8px 10px; border-radius:10px; display:flex; align-items:center; gap:8px; font-size:14px; }
-button { padding:10px 14px; border:none; border-radius:18px; cursor:pointer; margin-top:10px; font-size:14px; transition: transform 0.2s; }
-.primary-btn { background:white; color:#ff6a00; font-weight:bold; }
-.logout-btn { background:#ff6a00; color:white; margin-left:10px; }
-.logout-btn:hover, .primary-btn:hover { transform:scale(1.03); }
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; }
-.modal-content { background:white; padding:20px; max-width:500px; margin:80px auto; border-radius:15px; }
-.modal-header { display:flex; justify-content:space-between; align-items:center; }
+#beschikbaarheidContainer .slot {
+  margin:5px 0;
+  background:rgba(255,255,255,0.9);
+  padding:8px 10px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+}
+button {
+  padding:10px 14px;
+  border:none;
+  border-radius:18px;
+  cursor:pointer;
+  margin-top:10px;
+  font-size:14px;
+  transition: transform 0.2s;
+}
+.primary-btn {
+  background:white;
+  color:#ff6a00;
+  font-weight:bold;
+}
+.logout-btn {
+  background:#ff6a00;
+  color:white;
+  margin-left:10px;
+}
+.logout-btn:hover,
+.primary-btn:hover {
+  transform:scale(1.03);
+}
+.modal {
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  z-index:100;
+}
+.modal-content {
+  background:white;
+  padding:20px;
+  max-width:500px;
+  margin:80px auto;
+  border-radius:15px;
+}
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 .modal-header h3 { margin:0; }
 .modal-body p { margin:4px 0; font-size:14px; }
-.modal-actions { margin-top:15px; display:flex; flex-wrap:wrap; gap:8px; }
+.modal-actions {
+  margin-top:15px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
 .btn-approve { background:green; color:white; }
 .btn-reject { background:#999; color:white; }
 .btn-swap { background:#f58231; color:white; }
 .btn-close { background:#555; color:white; }
+
 @media (max-width: 600px) {
   .main { width:90%; padding:15px; }
   #calendar { padding:5px; }
@@ -112,24 +184,18 @@ button { padding:10px 14px; border:none; border-radius:18px; cursor:pointer; mar
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 
 <script>
-/* -------------------------
-   SUPABASE INIT
-------------------------- */
 const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
 const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-const client = supabase.createClient(supabaseUrl, supabaseKey);
+const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = null;
 let selectedEvent = null;
 let checkboxes = [];
 
-/* -------------------------
-   POSTEN (7 kleuren + iconen)
-------------------------- */
 const posten = [
   { naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
   { naam: "Post Geel", kleur: "#3cb44b", icoon: "🧯" },
@@ -140,128 +206,185 @@ const posten = [
   { naam: "Post Westerlo", kleur: "#46f0f0", icoon: "📞" }
 ];
 
-/* -------------------------
-   CALENDAR INIT
-------------------------- */
+const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
+const tijden = ["10:00","13:30"];
+
 const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-  initialView:'dayGridMonth',
-  locale:'nl',
-  height:'auto',
-  eventDisplay:'block',
+  initialView: 'dayGridMonth',
+  locale: 'nl',
+  height: 'auto',
+  eventDisplay: 'block',
   eventClick: onEventClick
 });
 
-/* -------------------------
-   ONLOAD
-------------------------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) { window.location.href = "login.html"; return; }
+  try {
+    const { data: { user }, error: userError } = await client.auth.getUser();
 
-  const { data: profile } = await client
-    .from("profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
+    if (userError || !user) {
+      window.location.href = "login.html";
+      return;
+    }
 
-  if (!profile || !profile.approved) {
-    alert("Account niet goedgekeurd");
-    await client.auth.signOut();
-    window.location.href = "login.html";
-    return;
+    const { data: profile, error: profileError } = await client
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("Fout bij ophalen profiel:", profileError);
+      alert("Fout bij laden van je profiel.");
+      return;
+    }
+
+    if (!profile) {
+      alert("Er werd geen profiel gevonden voor deze gebruiker.");
+      await client.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (!profile.approved) {
+      alert("Account niet goedgekeurd");
+      await client.auth.signOut();
+      window.location.href = "login.html";
+      return;
+    }
+
+    currentUser = profile;
+
+    document.getElementById("welcome").innerText =
+      `Welkom, ${profile.name || profile.email}!`;
+
+    if (profile.is_admin === true) {
+      document.getElementById("adminBtn").style.display = "inline-block";
+    }
+
+    bouwLegend();
+    laadBeschikbaarheidSlots();
+    await laadBestaandeBeschikbaarheid();
+    await loadEvents();
+    calendar.render();
+
+    client.channel("realtime-aanvragen")
+      .on("postgres_changes", { event: "*", schema: "public", table: "aanvragen" }, async () => {
+        await loadEvents();
+      })
+      .subscribe();
+
+    client.channel("realtime-beschikbaarheid")
+      .on("postgres_changes", { event: "*", schema: "public", table: "beschikbaarheid" }, async () => {
+        if (selectedEvent) {
+          await updateBezetting(selectedEvent);
+        }
+      })
+      .subscribe();
+
+  } catch (err) {
+    console.error("Onverwachte fout:", err);
+    alert("Er liep iets mis bij het laden van het dashboard.");
   }
-
-  currentUser = profile;
-  document.getElementById("welcome").innerText =
-    `Welkom, ${profile.name || profile.email}!`;
-
-  if (profile.is_admin) {
-    document.getElementById("adminBtn").style.display = "inline-block";
-  }
-
-  bouwLegend();
-  laadBeschikbaarheidSlots();
-  await laadBestaandeBeschikbaarheid();
-  await loadEvents();
-  calendar.render();
-
-  // Realtime updates
-  client.channel("realtime-aanvragen")
-    .on("postgres_changes", { event:"*", schema:"public", table:"aanvragen" }, loadEvents)
-    .subscribe();
-
-  client.channel("realtime-beschikbaarheid")
-    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbaarheid" }, () => {
-      if (selectedEvent) updateBezetting(selectedEvent);
-    })
-    .subscribe();
 });
 
-/* -------------------------
-   LEGEND
-------------------------- */
 function bouwLegend() {
   const legend = document.getElementById("legend");
   legend.innerHTML = "";
+
   posten.forEach(p => {
     const div = document.createElement("div");
     div.className = "legend-item";
+
     const color = document.createElement("div");
     color.className = "legend-color";
     color.style.background = p.kleur;
+
     div.appendChild(color);
     div.appendChild(document.createTextNode(`${p.icoon} ${p.naam}`));
     legend.appendChild(div);
   });
 }
 
-/* -------------------------
-   EVENTS LADEN
-------------------------- */
 async function loadEvents() {
-  const { data } = await client.from("aanvragen").select("*");
+  const { data, error } = await client
+    .from("aanvragen")
+    .select("*")
+    .eq("status", "goedgekeurd");
+
+  if (error) {
+    console.error("Fout bij laden aanvragen:", error);
+    return;
+  }
+
   calendar.removeAllEvents();
 
-  if (!data) return;
+  if (!data || data.length === 0) return;
 
   data.forEach(item => {
     if (!item.datum) return;
 
-    const [datum, tijd] = item.datum.split(" - ");
-    const iso = convertToISO(datum) + "T" + tijd;
+    const parts = item.datum.split(" - ");
+    if (parts.length !== 2) return;
 
-    const post = posten[(item.post_nummer || 1) - 1];
+    const datum = parts[0];
+    const tijd = parts[1];
+
+    const isoDate = convertToISO(datum);
+    if (!isoDate) return;
+
+    const iso = isoDate + "T" + tijd;
+
+    const postIndex = ((item.post_nummer || 1) - 1);
+    const post = posten[postIndex] || posten[0];
 
     calendar.addEvent({
-      title: `${post.icoon} ${item.school}`,
+      title: `${post.icoon} ${item.school || "Bezoek"}`,
       start: iso,
       color: post.kleur,
-      extendedProps: { ...item, postNaam: post.naam, postIcoon: post.icoon }
+      extendedProps: {
+        ...item,
+        postNaam: post.naam,
+        postIcoon: post.icoon
+      }
     });
   });
 }
 
 function convertToISO(d) {
   const maanden = {
-    januari:"01", februari:"02", maart:"03", april:"04",
-    mei:"05", juni:"06", juli:"07", augustus:"08",
-    september:"09", oktober:"10", november:"11", december:"12"
+    januari: "01",
+    februari: "02",
+    maart: "03",
+    april: "04",
+    mei: "05",
+    juni: "06",
+    juli: "07",
+    augustus: "08",
+    september: "09",
+    oktober: "10",
+    november: "11",
+    december: "12"
   };
+
   const parts = d.split(" ");
   if (parts.length !== 3) return "";
-  return `${parts[2]}-${maanden[parts[1]]}-${parts[0].padStart(2,'0')}`;
+
+  const dag = parts[0].padStart(2, '0');
+  const maand = maanden[parts[1]];
+  const jaar = parts[2];
+
+  if (!maand) return "";
+
+  return `${jaar}-${maand}-${dag}`;
 }
 
-/* -------------------------
-   EVENT CLICK
-------------------------- */
 async function onEventClick(info) {
   selectedEvent = info.event.extendedProps;
 
   document.getElementById("details").innerHTML = `
     <b>${selectedEvent.postIcoon} ${selectedEvent.postNaam}</b><br>
-    <b>School:</b> ${selectedEvent.school}<br>
-    <b>Datum:</b> ${selectedEvent.datum}<br>
+    <b>School:</b> ${selectedEvent.school || "-"}<br>
+    <b>Datum:</b> ${selectedEvent.datum || "-"}<br>
     <b>Begeleider:</b> ${selectedEvent.begeleider || "-"}<br>
     <b>Email:</b> ${selectedEvent.email || "-"}<br>
     <b>GSM:</b> ${selectedEvent.gsm || "-"}<br>
@@ -273,10 +396,16 @@ async function onEventClick(info) {
 }
 
 async function updateBezetting(ev) {
-  const { data } = await client
+  const { data, error } = await client
     .from("beschikbaarheid")
     .select("*")
     .eq("datum", ev.datum);
+
+  if (error) {
+    console.error("Fout bij laden bezetting:", error);
+    document.getElementById("bezetting").innerHTML = "Fout bij laden van bezetting.";
+    return;
+  }
 
   const nodig = 2;
   const aanwezig = data ? data.filter(b => b.aanwezig) : [];
@@ -289,7 +418,9 @@ async function updateBezetting(ev) {
   document.getElementById("bezetting").innerHTML = `
     <b>Ingeschreven begeleiders (${aanwezig.length}/${nodig}):</b><br>
     ${lijst}<br>
-    ${tekort > 0 ? `<span style="color:#c71f1f;">Nog ${tekort} nodig</span>` : `<span style="color:green;">Volledig bemand</span>`}
+    ${tekort > 0
+      ? `<span style="color:#c71f1f;">Nog ${tekort} nodig</span>`
+      : `<span style="color:green;">Volledig bemand</span>`}
   `;
 }
 
@@ -298,76 +429,97 @@ function closeModal() {
   selectedEvent = null;
 }
 
-/* -------------------------
-   BESCHIKBAARHEID
-------------------------- */
 async function setBeschikbaarheid(aanwezig) {
-  if (!selectedEvent) return;
+  if (!selectedEvent || !currentUser) return;
 
-  await client
+  const { error: deleteError } = await client
     .from("beschikbaarheid")
     .delete()
     .eq("user_email", currentUser.email)
     .eq("datum", selectedEvent.datum);
 
-  await client.from("beschikbaarheid").insert([{
-    user_email: currentUser.email,
-    datum: selectedEvent.datum,
-    aanwezig,
-    ruil_gevraagd: false
-  }]);
+  if (deleteError) {
+    console.error("Fout bij verwijderen oude beschikbaarheid:", deleteError);
+    alert("Fout bij aanpassen beschikbaarheid.");
+    return;
+  }
+
+  const { error: insertError } = await client
+    .from("beschikbaarheid")
+    .insert([{
+      user_email: currentUser.email,
+      datum: selectedEvent.datum,
+      aanwezig: aanwezig,
+      ruil_gevraagd: false
+    }]);
+
+  if (insertError) {
+    console.error("Fout bij opslaan beschikbaarheid:", insertError);
+    alert("Fout bij opslaan beschikbaarheid.");
+    return;
+  }
 
   alert(aanwezig ? "Je hebt je beschikbaar gesteld." : "Je bent niet beschikbaar.");
   await updateBezetting(selectedEvent);
 }
 
 async function vraagRuil() {
-  if (!selectedEvent) return;
+  if (!selectedEvent || !currentUser) return;
 
-  await client
+  const { error } = await client
     .from("beschikbaarheid")
     .update({ ruil_gevraagd: true })
     .eq("user_email", currentUser.email)
     .eq("datum", selectedEvent.datum);
 
+  if (error) {
+    console.error("Fout bij ruil aanvragen:", error);
+    alert("Ruil aanvragen is niet gelukt.");
+    return;
+  }
+
   alert("Je hebt een ruil aangevraagd.");
 }
-
-/* -------------------------
-   BESCHIKBAARHEIDSLIJST
-------------------------- */
-const datums = ["10 april 2026","15 april 2026","22 april 2026","5 mei 2026"];
-const tijden = ["10:00","13:30"];
 
 function laadBeschikbaarheidSlots() {
   const container = document.getElementById("beschikbaarheidContainer");
   container.innerHTML = "";
   checkboxes = [];
 
-  datums.forEach(d => tijden.forEach(t => {
-    const key = d + " - " + t;
-    const div = document.createElement("div");
-    div.className = "slot";
+  datums.forEach(d => {
+    tijden.forEach(t => {
+      const key = d + " - " + t;
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.value = key;
+      const div = document.createElement("div");
+      div.className = "slot";
 
-    const label = document.createElement("span");
-    label.textContent = `📅 ${key}`;
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = key;
 
-    checkboxes.push(cb);
-    div.appendChild(cb);
-    div.appendChild(label);
-    container.appendChild(div);
-  }));
+      const label = document.createElement("span");
+      label.textContent = `📅 ${key}`;
+
+      checkboxes.push(cb);
+      div.appendChild(cb);
+      div.appendChild(label);
+      container.appendChild(div);
+    });
+  });
 }
 
 async function laadBestaandeBeschikbaarheid() {
-  const { data } = await client
+  if (!currentUser) return;
+
+  const { data, error } = await client
     .from("beschikbaarheid")
     .select("*")
     .eq("user_email", currentUser.email);
+
+  if (error) {
+    console.error("Fout bij laden bestaande beschikbaarheid:", error);
+    return;
+  }
 
   checkboxes.forEach(cb => {
     if (data && data.some(d => d.datum === cb.value && d.aanwezig)) {
@@ -377,10 +529,18 @@ async function laadBestaandeBeschikbaarheid() {
 }
 
 async function opslaanBeschikbaarheid() {
-  await client
+  if (!currentUser) return;
+
+  const { error: deleteError } = await client
     .from("beschikbaarheid")
     .delete()
     .eq("user_email", currentUser.email);
+
+  if (deleteError) {
+    console.error("Fout bij verwijderen beschikbaarheid:", deleteError);
+    alert("Beschikbaarheid opslaan is mislukt.");
+    return;
+  }
 
   const inserts = checkboxes
     .filter(cb => cb.checked)
@@ -392,15 +552,20 @@ async function opslaanBeschikbaarheid() {
     }));
 
   if (inserts.length > 0) {
-    await client.from("beschikbaarheid").insert(inserts);
+    const { error: insertError } = await client
+      .from("beschikbaarheid")
+      .insert(inserts);
+
+    if (insertError) {
+      console.error("Fout bij invoegen beschikbaarheid:", insertError);
+      alert("Beschikbaarheid opslaan is mislukt.");
+      return;
+    }
   }
 
   alert("Beschikbaarheid opgeslagen.");
 }
 
-/* -------------------------
-   ADMIN + LOGOUT
-------------------------- */
 function openAdmin() {
   window.location.href = "admin.html";
 }
