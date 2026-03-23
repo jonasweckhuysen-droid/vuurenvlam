@@ -131,7 +131,6 @@
         <input type="number" id="aantal" required>
       </div>
 
-      <!-- 🔥 POST-SELECTIE -->
       <div class="input-group">
         <label>🚒 Kies een brandweerpost</label>
         <select id="postSelect" required>
@@ -146,9 +145,8 @@
         </select>
       </div>
 
-      <!-- 🔥 DYNAMISCHE DATUMS -->
       <div class="input-group">
-        <label>📆 Kies een datum</label>
+        <label>📆 Kies een datum & uur</label>
         <select id="datumSelect" required>
           <option value="">-- Kies datum & uur --</option>
         </select>
@@ -184,33 +182,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // 1. Haal alle beschikbare datums op
     const { data: datums, error: err1 } = await supabase
       .from("beschikbare_datums")
-      .select("*");
+      .select("*")
+      .order('datum', { ascending: true })
+      .order('tijd', { ascending: true });
 
-    if (err1) {
-      console.error(err1);
-      return;
-    }
+    if (err1) { console.error(err1); return; }
 
     // 2. Haal alle reeds ingenomen slots op
     const { data: bezetData, error: err2 } = await supabase
       .from("aanvragen")
-      .select("datum");
+      .select("datum, tijd");
 
-    if (err2) {
-      console.error(err2);
-      return;
-    }
-
-    const ingenomen = bezetData.map(b => b.datum);
+    if (err2) { console.error(err2); return; }
 
     // 3. Dropdown leegmaken
     select.innerHTML = '<option value="">-- Kies datum & uur --</option>';
 
     // 4. Beschikbare datums tonen
     datums.forEach(item => {
-      const key = item.datum + " - " + item.tijd;
 
-      if (ingenomen.includes(key)) return;
+      // Check of slot al ingenomen is
+      const isBezet = bezetData.some(b => b.datum === item.datum && b.tijd === item.tijd);
+      if (isBezet) return;
+
+      const key = item.datum + " - " + item.tijd;
 
       const option = document.createElement("option");
       option.value = key;
@@ -226,13 +221,21 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("aanvraagForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
+    if (!select.value) {
+      alert("Kies eerst een datum & uur!");
+      return;
+    }
+
+    const [datum, tijd] = select.value.split(" - ");
+
     const data = {
       school: document.getElementById("school").value,
       begeleider: document.getElementById("begeleider").value,
       email: document.getElementById("email").value,
       gsm: document.getElementById("gsm").value,
       aantal: parseInt(document.getElementById("aantal").value),
-      datum: select.value,
+      datum: datum,
+      tijd: tijd,
       post_nummer: parseInt(document.getElementById("postSelect").value),
       status: "nieuw"
     };
@@ -241,7 +244,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const { data: bestaande } = await supabase
       .from("aanvragen")
       .select("id")
-      .eq("datum", data.datum);
+      .eq("datum", datum)
+      .eq("tijd", tijd);
 
     if (bestaande.length > 0) {
       alert("Dit tijdslot is net al ingenomen!");
