@@ -59,6 +59,7 @@
       border-radius: 15px;
       border: none;
       font-size: 16px;
+      box-sizing: border-box;
     }
 
     select {
@@ -83,6 +84,7 @@
       justify-content: center;
       gap: 10px;
       text-decoration: none;
+      cursor: pointer;
     }
 
     .btn:hover {
@@ -128,20 +130,13 @@
 
       <div class="input-group">
         <label>👨‍👩‍👧‍👦 Aantal kinderen</label>
-        <input type="number" id="aantal" required>
+        <input type="number" id="aantal" min="1" required>
       </div>
 
       <div class="input-group">
         <label>🚒 Kies een brandweerpost</label>
         <select id="postSelect" required>
           <option value="">-- Kies een post --</option>
-          <option value="1">Post Balen</option>
-          <option value="2">Post Geel</option>
-          <option value="3">Post Grobbendonk</option>
-          <option value="4">Post Herentals</option>
-          <option value="5">Post Herenthout</option>
-          <option value="6">Post Mol</option>
-          <option value="7">Post Westerlo</option>
         </select>
       </div>
 
@@ -152,7 +147,7 @@
         </select>
       </div>
 
-      <button class="btn">Aanvraag versturen 🔥</button>
+      <button type="submit" class="btn">Aanvraag versturen 🔥</button>
 
     </form>
 
@@ -162,107 +157,156 @@
     <span class="material-symbols-rounded">arrow_back</span>
     Terug
   </a>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
   const supabaseUrl = "https://elmkjlqcsshctmnbqbfq.supabase.co";
   const supabaseKey = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
   const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  const select = document.getElementById("datumSelect");
+  const postSelect = document.getElementById("postSelect");
+  const datumSelect = document.getElementById("datumSelect");
+  const form = document.getElementById("aanvraagForm");
 
-  // 🔥 DYNAMISCHE DATUMS LADEN
-  async function laadBeschikbareSlots() {
+  async function laadPosten() {
+    const { data, error } = await supabase
+      .from("posten")
+      .select("id, naam, icoon")
+      .order("id", { ascending: true });
 
-    // 1. Haal alle beschikbare datums op
-    const { data: datums, error: err1 } = await supabase
-      .from("beschikbare_datums")
-      .select("*")
-      .order('datum', { ascending: true })
-      .order('tijd', { ascending: true });
+    if (error) {
+      console.error("Fout bij laden posten:", error);
+      return;
+    }
 
-    if (err1) { console.error(err1); return; }
+    postSelect.innerHTML = '<option value="">-- Kies een post --</option>';
 
-    // 2. Haal alle reeds ingenomen slots op
-    const { data: bezetData, error: err2 } = await supabase
-      .from("aanvragen")
-      .select("datum, tijd");
-
-    if (err2) { console.error(err2); return; }
-
-    // 3. Dropdown leegmaken
-    select.innerHTML = '<option value="">-- Kies datum & uur --</option>';
-
-    // 4. Beschikbare datums tonen
-    datums.forEach(item => {
-
-      // Check of slot al ingenomen is
-      const isBezet = bezetData.some(b => b.datum === item.datum && b.tijd === item.tijd);
-      if (isBezet) return;
-
-      const key = item.datum + " - " + item.tijd;
-
+    (data || []).forEach(post => {
       const option = document.createElement("option");
-      option.value = key;
-      option.textContent = `🔥 ${item.datum} om ${item.tijd}`;
-
-      select.appendChild(option);
+      option.value = post.id;
+      option.textContent = `${post.icoon || "🚒"} ${post.naam}`;
+      postSelect.appendChild(option);
     });
   }
 
-  laadBeschikbareSlots();
+  async function laadBeschikbareSlots() {
+    const gekozenPostId = postSelect.value;
 
-  // 🔥 FORM SUBMIT
-  document.getElementById("aanvraagForm").addEventListener("submit", async function(e) {
+    datumSelect.innerHTML = '<option value="">-- Kies datum & uur --</option>';
+
+    if (!gekozenPostId) {
+      return;
+    }
+
+    const { data: datums, error: err1 } = await supabase
+      .from("beschikbare_datums")
+      .select("*")
+      .order("datum", { ascending: true })
+      .order("tijd", { ascending: true });
+
+    if (err1) {
+      console.error("Fout bij laden beschikbare datums:", err1);
+      return;
+    }
+
+    const { data: bezetData, error: err2 } = await supabase
+      .from("aanvragen")
+      .select("datum, tijd, post_id, status");
+
+    if (err2) {
+      console.error("Fout bij laden ingenomen slots:", err2);
+      return;
+    }
+
+    const vrijeSlots = (datums || []).filter(item => {
+      const isBezet = (bezetData || []).some(b =>
+        String(b.post_id) === String(gekozenPostId) &&
+        b.datum === item.datum &&
+        b.tijd === item.tijd &&
+        b.status !== "Geweigerd"
+      );
+
+      return !isBezet;
+    });
+
+    vrijeSlots.forEach(item => {
+      const key = `${item.datum}|${item.tijd}`;
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = `🔥 ${item.datum} om ${item.tijd}`;
+      datumSelect.appendChild(option);
+    });
+  }
+
+  postSelect.addEventListener("change", laadBeschikbareSlots);
+
+  form.addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    if (!select.value) {
-      alert("Kies eerst een datum & uur!");
+    if (!postSelect.value) {
+      alert("Kies eerst een brandweerpost.");
       return;
     }
 
-    const [datum, tijd] = select.value.split(" - ");
+    if (!datumSelect.value) {
+      alert("Kies eerst een datum en uur.");
+      return;
+    }
 
-    const data = {
-      school: document.getElementById("school").value,
-      begeleider: document.getElementById("begeleider").value,
-      email: document.getElementById("email").value,
-      gsm: document.getElementById("gsm").value,
-      aantal: parseInt(document.getElementById("aantal").value),
+    const [datum, tijd] = datumSelect.value.split("|");
+    const postId = parseInt(postSelect.value, 10);
+    const datum_tijd = `${datum}T${tijd}:00`;
+
+    const aanvraagData = {
+      school: document.getElementById("school").value.trim(),
+      begeleider: document.getElementById("begeleider").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      gsm: document.getElementById("gsm").value.trim(),
+      aantal: parseInt(document.getElementById("aantal").value, 10),
       datum: datum,
       tijd: tijd,
-      post_nummer: parseInt(document.getElementById("postSelect").value),
-      status: "nieuw"
+      datum_tijd: datum_tijd,
+      post_id: postId,
+      status: "Nieuw"
     };
 
-    // 🔴 EXTRA CHECK TEGEN DUBBEL BOEKEN
-    const { data: bestaande } = await supabase
+    const { data: bestaande, error: checkError } = await supabase
       .from("aanvragen")
       .select("id")
+      .eq("post_id", postId)
       .eq("datum", datum)
-      .eq("tijd", tijd);
+      .eq("tijd", tijd)
+      .neq("status", "Geweigerd");
 
-    if (bestaande.length > 0) {
-      alert("Dit tijdslot is net al ingenomen!");
-      laadBeschikbareSlots();
+    if (checkError) {
+      console.error("Fout bij controle bestaande aanvraag:", checkError);
+      alert("Fout bij controle van bestaande aanvragen.");
       return;
     }
 
-    const { error } = await supabase.from("aanvragen").insert([data]);
+    if (bestaande && bestaande.length > 0) {
+      alert("Dit tijdslot is net al ingenomen voor deze post.");
+      await laadBeschikbareSlots();
+      return;
+    }
+
+    const { error } = await supabase
+      .from("aanvragen")
+      .insert([aanvraagData]);
 
     if (error) {
+      console.error("Insert fout:", error);
       alert("Fout bij verzenden 😢: " + error.message);
-      console.error(error);
-    } else {
-      window.location.href = "bedankt.html";
+      return;
     }
+
+    window.location.href = "bedankt.html";
   });
 
+  laadPosten();
 });
 </script>
 
