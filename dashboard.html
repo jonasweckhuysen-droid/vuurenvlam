@@ -369,7 +369,7 @@ async function loadEvents() {
   const { data, error } = await client
     .from("aanvragen")
     .select("*")
-    .eq("status", "goedgekeurd")
+    .eq("status", "Goedgekeurd")
     .order("datum_tijd", { ascending: true });
 
   if (error) {
