@@ -68,6 +68,12 @@
       appearance: none;
     }
 
+    .info-note {
+      margin-top: 8px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.95);
+    }
+
     .btn {
       margin-top: 20px;
       padding: 15px;
@@ -143,8 +149,9 @@
       <div class="input-group">
         <label>📆 Kies een datum & uur</label>
         <select id="datumSelect" required>
-          <option value="">-- Kies datum & uur --</option>
+          <option value="">-- Kies eerst een post --</option>
         </select>
+        <div class="info-note" id="slotInfo"></div>
       </div>
 
       <button type="submit" class="btn">Aanvraag versturen 🔥</button>
@@ -169,7 +176,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const postSelect = document.getElementById("postSelect");
   const datumSelect = document.getElementById("datumSelect");
+  const slotInfo = document.getElementById("slotInfo");
   const form = document.getElementById("aanvraagForm");
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
   async function laadPosten() {
     const { data, error } = await supabase
@@ -179,6 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (error) {
       console.error("Fout bij laden posten:", error);
+      slotInfo.textContent = "Fout bij laden van de posten.";
       return;
     }
 
@@ -196,41 +214,59 @@ document.addEventListener("DOMContentLoaded", function () {
     const gekozenPostId = postSelect.value;
 
     datumSelect.innerHTML = '<option value="">-- Kies datum & uur --</option>';
+    slotInfo.textContent = "";
 
     if (!gekozenPostId) {
+      datumSelect.innerHTML = '<option value="">-- Kies eerst een post --</option>';
       return;
     }
 
     const { data: datums, error: err1 } = await supabase
       .from("beschikbare_datums")
-      .select("*")
+      .select("id, datum, tijd, datum_tijd")
       .order("datum", { ascending: true })
       .order("tijd", { ascending: true });
 
     if (err1) {
       console.error("Fout bij laden beschikbare datums:", err1);
+      slotInfo.textContent = "Fout bij laden van de beschikbare datums.";
       return;
     }
 
     const { data: bezetData, error: err2 } = await supabase
       .from("aanvragen")
-      .select("datum, tijd, post_id, status");
+      .select("id, datum, tijd, post_id, post_nummer, status");
 
     if (err2) {
       console.error("Fout bij laden ingenomen slots:", err2);
+      slotInfo.textContent = "Fout bij controleren van bezette slots.";
       return;
     }
 
     const vrijeSlots = (datums || []).filter(item => {
-      const isBezet = (bezetData || []).some(b =>
-        String(b.post_id) === String(gekozenPostId) &&
-        b.datum === item.datum &&
-        b.tijd === item.tijd &&
-        b.status !== "Geweigerd"
-      );
+      const isBezet = (bezetData || []).some(b => {
+        const zelfdePost =
+          String(b.post_id ?? b.post_nummer ?? "") === String(gekozenPostId);
+
+        const zelfdeDatum = String(b.datum ?? "") === String(item.datum ?? "");
+        const zelfdeTijd = String(b.tijd ?? "") === String(item.tijd ?? "");
+
+        const status = String(b.status || "").toLowerCase().trim();
+        const teltAlsBezet =
+          status !== "afgekeurd" &&
+          status !== "geweigerd";
+
+        return zelfdePost && zelfdeDatum && zelfdeTijd && teltAlsBezet;
+      });
 
       return !isBezet;
     });
+
+    if (vrijeSlots.length === 0) {
+      datumSelect.innerHTML = '<option value="">-- Geen vrije momenten beschikbaar --</option>';
+      slotInfo.textContent = "Voor deze post zijn momenteel geen vrije datums zichtbaar.";
+      return;
+    }
 
     vrijeSlots.forEach(item => {
       const key = `${item.datum}|${item.tijd}`;
@@ -239,6 +275,8 @@ document.addEventListener("DOMContentLoaded", function () {
       option.textContent = `🔥 ${item.datum} om ${item.tijd}`;
       datumSelect.appendChild(option);
     });
+
+    slotInfo.textContent = `${vrijeSlots.length} vrije moment(en) gevonden.`;
   }
 
   postSelect.addEventListener("change", laadBeschikbareSlots);
@@ -251,8 +289,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    if (!datumSelect.value) {
-      alert("Kies eerst een datum en uur.");
+    if (!datumSelect.value || !datumSelect.value.includes("|")) {
+      alert("Kies eerst een geldig datum- en tijdslot.");
       return;
     }
 
@@ -270,16 +308,16 @@ document.addEventListener("DOMContentLoaded", function () {
       tijd: tijd,
       datum_tijd: datum_tijd,
       post_id: postId,
+      post_nummer: postId,
       status: "Nieuw"
     };
 
     const { data: bestaande, error: checkError } = await supabase
       .from("aanvragen")
-      .select("id")
-      .eq("post_id", postId)
+      .select("id, status")
       .eq("datum", datum)
       .eq("tijd", tijd)
-      .neq("status", "Geweigerd");
+      .or(`post_id.eq.${postId},post_nummer.eq.${postId}`);
 
     if (checkError) {
       console.error("Fout bij controle bestaande aanvraag:", checkError);
@@ -287,7 +325,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    if (bestaande && bestaande.length > 0) {
+    const effectiefBezet = (bestaande || []).some(item => {
+      const status = String(item.status || "").toLowerCase().trim();
+      return status !== "afgekeurd" && status !== "geweigerd";
+    });
+
+    if (effectiefBezet) {
       alert("Dit tijdslot is net al ingenomen voor deze post.");
       await laadBeschikbareSlots();
       return;
