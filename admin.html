@@ -481,6 +481,11 @@ button:hover {
     </div>
 
     <div class="modal-body">
+      <label for="nieuwePost">Brandweerpost</label>
+      <select id="nieuwePost">
+        <option value="">-- Kies een post --</option>
+      </select>
+
       <label for="nieuweDatum">Datum</label>
       <input type="date" id="nieuweDatum">
 
@@ -533,6 +538,7 @@ window.onload = async () => {
     `Ingelogd als admin: ${profile.name || profile.email}`;
 
   await laadPostenMap();
+  await laadPostenDropdown();
   await refreshAll();
   startRealtime();
 };
@@ -552,6 +558,29 @@ async function laadPostenMap() {
   postenMap = {};
   (data || []).forEach(post => {
     postenMap[post.id] = post.naam;
+  });
+}
+
+async function laadPostenDropdown() {
+  const select = document.getElementById("nieuwePost");
+
+  const { data, error } = await client
+    .from("posten")
+    .select("id, naam, icoon")
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error("Fout bij laden posten dropdown:", error);
+    return;
+  }
+
+  select.innerHTML = '<option value="">-- Kies een post --</option>';
+
+  (data || []).forEach(post => {
+    const option = document.createElement("option");
+    option.value = post.id;
+    option.textContent = `${post.icoon || "🚒"} ${post.naam}`;
+    select.appendChild(option);
   });
 }
 
@@ -580,6 +609,7 @@ function startRealtime() {
 
 async function refreshAll() {
   await laadPostenMap();
+  await laadPostenDropdown();
   await loadUsers();
   await loadAanvragen();
   await loadBeschikbaarheid();
@@ -681,7 +711,7 @@ async function loadAanvragen() {
   data.forEach(a => {
     const row = document.createElement("tr");
     const datumWeergave = formatDatumTijd(a.datum, a.tijd);
-    const postNaam = postenMap[a.post_id] || postenMap[a.post_nummer] || "Onbekende post";
+    const postNaam = postenMap[a.post_id] || "Onbekende post";
 
     row.innerHTML = `
       <td>${a.school || "-"}</td>
@@ -801,11 +831,12 @@ function closeDatumModal() {
 }
 
 async function opslaanDatum() {
+  const postId = document.getElementById("nieuwePost").value;
   const datum = document.getElementById("nieuweDatum").value;
   const tijd = document.getElementById("nieuweTijd").value;
 
-  if (!datum || !tijd) {
-    alert("Vul zowel datum als tijd in.");
+  if (!postId || !datum || !tijd) {
+    alert("Kies een post, datum en tijd.");
     return;
   }
 
@@ -814,6 +845,7 @@ async function opslaanDatum() {
   const { error } = await client
     .from("beschikbare_datums")
     .insert([{
+      post_id: parseInt(postId, 10),
       datum: datum,
       tijd: tijd,
       datum_tijd: datum_tijd
@@ -826,6 +858,7 @@ async function opslaanDatum() {
   }
 
   alert("Datum toegevoegd.");
+  document.getElementById("nieuwePost").value = "";
   document.getElementById("nieuweDatum").value = "";
   document.getElementById("nieuweTijd").value = "";
   closeDatumModal();
