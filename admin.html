@@ -344,7 +344,7 @@ button:hover {
   }
 
   table {
-    min-width: 680px;
+    min-width: 760px;
   }
 
   .modal-content {
@@ -428,7 +428,7 @@ button:hover {
     <div class="section-header">
       <div>
         <h3>📅 Beschikbaarheid van gebruikers</h3>
-        <div class="section-sub">Overzicht van wie zich waar beschikbaar heeft gezet.</div>
+        <div class="section-sub">Hier kan je gebruikers ook uit een event verwijderen.</div>
       </div>
     </div>
 
@@ -441,6 +441,7 @@ button:hover {
             <th>Datum</th>
             <th>Aanwezig</th>
             <th>Ruil gevraagd</th>
+            <th>Acties</th>
           </tr>
         </thead>
         <tbody id="beschikbaarheidTable"></tbody>
@@ -696,7 +697,7 @@ async function loadBeschikbaarheid() {
   table.innerHTML = "";
 
   if (error || !data || data.length === 0) {
-    table.innerHTML = `<tr><td colspan="5"><div class="empty-message">Geen beschikbaarheden gevonden.</div></td></tr>`;
+    table.innerHTML = `<tr><td colspan="6"><div class="empty-message">Geen beschikbaarheden gevonden.</div></td></tr>`;
     return;
   }
 
@@ -709,10 +710,35 @@ async function loadBeschikbaarheid() {
       <td>${b.datum || "-"}</td>
       <td>${badgeYesNo(b.aanwezig)}</td>
       <td>${badgeYesNo(b.ruil_gevraagd)}</td>
+      <td class="actions-cell">
+        <div class="btn-group">
+          <button class="btn-delete" onclick="deleteBeschikbaarheid('${b.user_email}', '${String(b.datum).replace(/'/g, "\\'")}')">Verwijderen uit event</button>
+        </div>
+      </td>
     `;
 
     table.appendChild(row);
   });
+}
+
+async function deleteBeschikbaarheid(userEmail, datum) {
+  const zeker = confirm(`Wil je ${userEmail} verwijderen uit dit event?\n\n${datum}`);
+  if (!zeker) return;
+
+  const { error } = await client
+    .from("beschikbaarheid")
+    .delete()
+    .eq("user_email", userEmail)
+    .eq("datum", datum);
+
+  if (error) {
+    alert("Fout bij verwijderen: " + error.message);
+    console.error(error);
+    return;
+  }
+
+  alert("Gebruiker verwijderd uit het event.");
+  await loadBeschikbaarheid();
 }
 
 async function loadLogs() {
