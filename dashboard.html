@@ -133,7 +133,6 @@ button {
   .main { width:90%; padding:15px; }
   #calendar { padding:5px; }
   .modal-content { margin:40px 10px; width:auto; }
-  th, td { font-size:13px; }
 }
 </style>
 </head>
@@ -147,13 +146,11 @@ button {
 <div class="main">
   <div id="welcome"></div>
 
-  <!-- ADMIN BUTTON -->
   <button id="adminBtn" class="primary-btn" style="display:none;" onclick="openAdmin()">
     🛠️ Adminpaneel
   </button>
 
   <div id="legend"></div>
-
   <div id="calendar"></div>
 
   <div class="section">
@@ -164,7 +161,6 @@ button {
   </div>
 </div>
 
-<!-- MODAL -->
 <div id="modal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -233,29 +229,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       .maybeSingle();
 
     if (profileError) {
-      console.error("Fout bij ophalen profiel:", profileError);
-      alert("Fout bij laden van je profiel.");
+      console.error("Fout bij profiel:", profileError);
+      alert("Fout bij laden van profiel.");
       return;
     }
 
     if (!profile) {
-      alert("Er werd geen profiel gevonden voor deze gebruiker.");
+      alert("Geen profiel gevonden.");
       await client.auth.signOut();
       window.location.href = "login.html";
       return;
     }
 
     if (!profile.approved) {
-      alert("Account niet goedgekeurd");
+      alert("Account niet goedgekeurd.");
       await client.auth.signOut();
       window.location.href = "login.html";
       return;
     }
 
     currentUser = profile;
-
-    document.getElementById("welcome").innerText =
-      `Welkom, ${profile.name || profile.email}!`;
+    document.getElementById("welcome").innerText = `Welkom, ${profile.name || profile.email}!`;
 
     if (profile.is_admin === true) {
       document.getElementById("adminBtn").style.display = "inline-block";
@@ -264,26 +258,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     bouwLegend();
     laadBeschikbaarheidSlots();
     await laadBestaandeBeschikbaarheid();
-    await loadEvents();
     calendar.render();
-
-    client.channel("realtime-aanvragen")
-      .on("postgres_changes", { event: "*", schema: "public", table: "aanvragen" }, async () => {
-        await loadEvents();
-      })
-      .subscribe();
-
-    client.channel("realtime-beschikbaarheid")
-      .on("postgres_changes", { event: "*", schema: "public", table: "beschikbaarheid" }, async () => {
-        if (selectedEvent) {
-          await updateBezetting(selectedEvent);
-        }
-      })
-      .subscribe();
+    await loadEvents();
 
   } catch (err) {
     console.error("Onverwachte fout:", err);
-    alert("Er liep iets mis bij het laden van het dashboard.");
+    alert("Er liep iets mis bij het laden.");
   }
 });
 
@@ -316,37 +296,63 @@ async function loadEvents() {
     return;
   }
 
+  console.log("Geladen aanvragen:", data);
+
   calendar.removeAllEvents();
 
-  if (!data || data.length === 0) return;
+  if (!data || data.length === 0) {
+    console.log("Geen goedgekeurde aanvragen gevonden.");
+    return;
+  }
 
   data.forEach(item => {
-    if (!item.datum) return;
-
-    const parts = item.datum.split(" - ");
-    if (parts.length !== 2) return;
-
-    const datum = parts[0];
-    const tijd = parts[1];
-
-    const isoDate = convertToISO(datum);
-    if (!isoDate) return;
-
-    const iso = isoDate + "T" + tijd;
-
-    const postIndex = ((item.post_nummer || 1) - 1);
-    const post = posten[postIndex] || posten[0];
-
-    calendar.addEvent({
-      title: `${post.icoon} ${item.school || "Bezoek"}`,
-      start: iso,
-      color: post.kleur,
-      extendedProps: {
-        ...item,
-        postNaam: post.naam,
-        postIcoon: post.icoon
+    try {
+      if (!item.datum) {
+        console.log("Geen datum bij item:", item);
+        return;
       }
-    });
+
+      let datumDeel = "";
+      let tijdDeel = "09:00";
+
+      if (item.datum.includes(" - ")) {
+        const parts = item.datum.split(" - ");
+        datumDeel = parts[0]?.trim() || "";
+        tijdDeel = parts[1]?.trim() || "09:00";
+      } else {
+        datumDeel = item.datum.trim();
+      }
+
+      const isoDate = convertToISO(datumDeel);
+      if (!isoDate) {
+        console.log("Datum kon niet omgezet worden:", item.datum);
+        return;
+      }
+
+      const iso = `${isoDate}T${tijdDeel}`;
+      const postIndex = ((item.post_nummer || 1) - 1);
+      const post = posten[postIndex] || posten[0];
+
+      console.log("Event toegevoegd:", {
+        title: item.school,
+        start: iso,
+        status: item.status
+      });
+
+      calendar.addEvent({
+        title: `${post.icoon} ${item.school || "Bezoek"}`,
+        start: iso,
+        color: post.kleur,
+        extendedProps: {
+          ...item,
+          postNaam: post.naam,
+          postIcoon: post.icoon
+        }
+      });
+
+    } catch (e) {
+      console.error("Fout bij event:", item, e);
+    }
   });
 }
 
@@ -366,14 +372,14 @@ function convertToISO(d) {
     december: "12"
   };
 
-  const parts = d.split(" ");
+  const parts = d.trim().split(/\s+/);
   if (parts.length !== 3) return "";
 
   const dag = parts[0].padStart(2, '0');
-  const maand = maanden[parts[1]];
+  const maand = maanden[parts[1].toLowerCase()];
   const jaar = parts[2];
 
-  if (!maand) return "";
+  if (!maand || !jaar) return "";
 
   return `${jaar}-${maand}-${dag}`;
 }
@@ -402,8 +408,8 @@ async function updateBezetting(ev) {
     .eq("datum", ev.datum);
 
   if (error) {
-    console.error("Fout bij laden bezetting:", error);
-    document.getElementById("bezetting").innerHTML = "Fout bij laden van bezetting.";
+    console.error(error);
+    document.getElementById("bezetting").innerHTML = "Fout bij laden bezetting.";
     return;
   }
 
@@ -432,19 +438,13 @@ function closeModal() {
 async function setBeschikbaarheid(aanwezig) {
   if (!selectedEvent || !currentUser) return;
 
-  const { error: deleteError } = await client
+  await client
     .from("beschikbaarheid")
     .delete()
     .eq("user_email", currentUser.email)
     .eq("datum", selectedEvent.datum);
 
-  if (deleteError) {
-    console.error("Fout bij verwijderen oude beschikbaarheid:", deleteError);
-    alert("Fout bij aanpassen beschikbaarheid.");
-    return;
-  }
-
-  const { error: insertError } = await client
+  await client
     .from("beschikbaarheid")
     .insert([{
       user_email: currentUser.email,
@@ -452,12 +452,6 @@ async function setBeschikbaarheid(aanwezig) {
       aanwezig: aanwezig,
       ruil_gevraagd: false
     }]);
-
-  if (insertError) {
-    console.error("Fout bij opslaan beschikbaarheid:", insertError);
-    alert("Fout bij opslaan beschikbaarheid.");
-    return;
-  }
 
   alert(aanwezig ? "Je hebt je beschikbaar gesteld." : "Je bent niet beschikbaar.");
   await updateBezetting(selectedEvent);
@@ -473,8 +467,7 @@ async function vraagRuil() {
     .eq("datum", selectedEvent.datum);
 
   if (error) {
-    console.error("Fout bij ruil aanvragen:", error);
-    alert("Ruil aanvragen is niet gelukt.");
+    alert("Ruil aanvragen mislukt.");
     return;
   }
 
@@ -511,15 +504,10 @@ function laadBeschikbaarheidSlots() {
 async function laadBestaandeBeschikbaarheid() {
   if (!currentUser) return;
 
-  const { data, error } = await client
+  const { data } = await client
     .from("beschikbaarheid")
     .select("*")
     .eq("user_email", currentUser.email);
-
-  if (error) {
-    console.error("Fout bij laden bestaande beschikbaarheid:", error);
-    return;
-  }
 
   checkboxes.forEach(cb => {
     if (data && data.some(d => d.datum === cb.value && d.aanwezig)) {
@@ -531,16 +519,10 @@ async function laadBestaandeBeschikbaarheid() {
 async function opslaanBeschikbaarheid() {
   if (!currentUser) return;
 
-  const { error: deleteError } = await client
+  await client
     .from("beschikbaarheid")
     .delete()
     .eq("user_email", currentUser.email);
-
-  if (deleteError) {
-    console.error("Fout bij verwijderen beschikbaarheid:", deleteError);
-    alert("Beschikbaarheid opslaan is mislukt.");
-    return;
-  }
 
   const inserts = checkboxes
     .filter(cb => cb.checked)
@@ -552,15 +534,7 @@ async function opslaanBeschikbaarheid() {
     }));
 
   if (inserts.length > 0) {
-    const { error: insertError } = await client
-      .from("beschikbaarheid")
-      .insert(inserts);
-
-    if (insertError) {
-      console.error("Fout bij invoegen beschikbaarheid:", insertError);
-      alert("Beschikbaarheid opslaan is mislukt.");
-      return;
-    }
+    await client.from("beschikbaarheid").insert(inserts);
   }
 
   alert("Beschikbaarheid opgeslagen.");
