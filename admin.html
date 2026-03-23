@@ -281,7 +281,8 @@ button:hover {
   font-weight: 600;
 }
 
-.modal-body input {
+.modal-body input,
+.modal-body select {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
@@ -481,10 +482,10 @@ button:hover {
 
     <div class="modal-body">
       <label for="nieuweDatum">Datum</label>
-      <input type="text" id="nieuweDatum" placeholder="bv. 12 mei 2026">
+      <input type="date" id="nieuweDatum">
 
       <label for="nieuweTijd">Tijdstip</label>
-      <input type="text" id="nieuweTijd" placeholder="bv. 10:00">
+      <input type="time" id="nieuweTijd">
     </div>
 
     <div class="modal-actions">
@@ -504,6 +505,7 @@ const client = window.supabase.createClient(
 
 let currentUser = null;
 let realtimeChannels = [];
+let postenMap = {};
 
 window.onload = async () => {
   const { data: { user }, error: authError } = await client.auth.getUser();
@@ -530,9 +532,28 @@ window.onload = async () => {
   document.getElementById("adminInfo").innerText =
     `Ingelogd als admin: ${profile.name || profile.email}`;
 
+  await laadPostenMap();
   await refreshAll();
   startRealtime();
 };
+
+async function laadPostenMap() {
+  const { data, error } = await client
+    .from("posten")
+    .select("id, naam")
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error("Fout bij laden posten:", error);
+    postenMap = {};
+    return;
+  }
+
+  postenMap = {};
+  (data || []).forEach(post => {
+    postenMap[post.id] = post.naam;
+  });
+}
 
 function startRealtime() {
   realtimeChannels.forEach(ch => client.removeChannel(ch));
@@ -558,6 +579,7 @@ function startRealtime() {
 }
 
 async function refreshAll() {
+  await laadPostenMap();
   await loadUsers();
   await loadAanvragen();
   await loadBeschikbaarheid();
@@ -568,6 +590,12 @@ function badgeYesNo(value) {
   return value
     ? '<span class="badge badge-ok">Ja</span>'
     : '<span class="badge badge-no">Nee</span>';
+}
+
+function formatDatumTijd(datum, tijd) {
+  if (!datum) return "-";
+  if (tijd) return `${datum} ${tijd}`;
+  return datum;
 }
 
 async function loadUsers() {
@@ -645,16 +673,6 @@ async function loadAanvragen() {
   const table = document.getElementById("aanvraagTable");
   table.innerHTML = "";
 
-  const posten = [
-    "Post Balen",
-    "Post Geel",
-    "Post Grobbendonk",
-    "Post Herentals",
-    "Post Herenthout",
-    "Post Mol",
-    "Post Westerlo"
-  ];
-
   if (error || !data || data.length === 0) {
     table.innerHTML = `<tr><td colspan="5"><div class="empty-message">Geen aanvragen gevonden.</div></td></tr>`;
     return;
@@ -662,8 +680,8 @@ async function loadAanvragen() {
 
   data.forEach(a => {
     const row = document.createElement("tr");
-    const datumWeergave = a.datum_tijd || a.datum || "-";
-    const postNaam = posten[(a.post_nummer || 1) - 1] || "Onbekende post";
+    const datumWeergave = formatDatumTijd(a.datum, a.tijd);
+    const postNaam = postenMap[a.post_id] || postenMap[a.post_nummer] || "Onbekende post";
 
     row.innerHTML = `
       <td>${a.school || "-"}</td>
@@ -707,12 +725,12 @@ async function loadBeschikbaarheid() {
     row.innerHTML = `
       <td>${b.user_name || "-"}</td>
       <td>${b.user_email || "-"}</td>
-      <td>${b.datum || "-"}</td>
+      <td>${formatDatumTijd(b.datum, b.tijd)}</td>
       <td>${badgeYesNo(b.aanwezig)}</td>
       <td>${badgeYesNo(b.ruil_gevraagd)}</td>
       <td class="actions-cell">
         <div class="btn-group">
-          <button class="btn-delete" onclick="deleteBeschikbaarheid('${b.user_email}', '${String(b.datum).replace(/'/g, "\\'")}')">Verwijderen uit event</button>
+          <button class="btn-delete" onclick="deleteBeschikbaarheid('${b.user_email}', '${b.datum}', '${b.tijd || ""}')">Verwijderen uit event</button>
         </div>
       </td>
     `;
@@ -721,15 +739,21 @@ async function loadBeschikbaarheid() {
   });
 }
 
-async function deleteBeschikbaarheid(userEmail, datum) {
-  const zeker = confirm(`Wil je ${userEmail} verwijderen uit dit event?\n\n${datum}`);
+async function deleteBeschikbaarheid(userEmail, datum, tijd) {
+  const zeker = confirm(`Wil je ${userEmail} verwijderen uit dit event?\n\n${formatDatumTijd(datum, tijd)}`);
   if (!zeker) return;
 
-  const { error } = await client
+  let query = client
     .from("beschikbaarheid")
     .delete()
     .eq("user_email", userEmail)
     .eq("datum", datum);
+
+  if (tijd) {
+    query = query.eq("tijd", tijd);
+  }
+
+  const { error } = await query;
 
   if (error) {
     alert("Fout bij verwijderen: " + error.message);
@@ -777,20 +801,27 @@ function closeDatumModal() {
 }
 
 async function opslaanDatum() {
-  const datum = document.getElementById("nieuweDatum").value.trim();
-  const tijd = document.getElementById("nieuweTijd").value.trim();
+  const datum = document.getElementById("nieuweDatum").value;
+  const tijd = document.getElementById("nieuweTijd").value;
 
   if (!datum || !tijd) {
     alert("Vul zowel datum als tijd in.");
     return;
   }
 
+  const datum_tijd = `${datum}T${tijd}:00`;
+
   const { error } = await client
     .from("beschikbare_datums")
-    .insert([{ datum, tijd }]);
+    .insert([{
+      datum: datum,
+      tijd: tijd,
+      datum_tijd: datum_tijd
+    }]);
 
   if (error) {
     alert("Fout bij opslaan: " + error.message);
+    console.error(error);
     return;
   }
 
