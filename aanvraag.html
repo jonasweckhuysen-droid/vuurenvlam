@@ -179,15 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const slotInfo = document.getElementById("slotInfo");
   const form = document.getElementById("aanvraagForm");
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
   async function laadPosten() {
     const { data, error } = await supabase
       .from("posten")
@@ -211,19 +202,19 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function laadBeschikbareSlots() {
-    const gekozenPostId = postSelect.value;
+    const gekozenPostNummer = postSelect.value;
 
     datumSelect.innerHTML = '<option value="">-- Kies datum & uur --</option>';
     slotInfo.textContent = "";
 
-    if (!gekozenPostId) {
+    if (!gekozenPostNummer) {
       datumSelect.innerHTML = '<option value="">-- Kies eerst een post --</option>';
       return;
     }
 
     const { data: datums, error: err1 } = await supabase
       .from("beschikbare_datums")
-      .select("id, datum, tijd, datum_tijd")
+      .select("datum, tijd")
       .order("datum", { ascending: true })
       .order("tijd", { ascending: true });
 
@@ -235,28 +226,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const { data: bezetData, error: err2 } = await supabase
       .from("aanvragen")
-      .select("id, datum, tijd, post_id, post_nummer, status");
+      .select("id, datum, tijd, post_nummer, status");
 
     if (err2) {
       console.error("Fout bij laden ingenomen slots:", err2);
-      slotInfo.textContent = "Fout bij controleren van bezette slots.";
+      slotInfo.textContent = "Fout bij laden van de reeds ingenomen slots.";
       return;
     }
 
     const vrijeSlots = (datums || []).filter(item => {
       const isBezet = (bezetData || []).some(b => {
-        const zelfdePost =
-          String(b.post_id ?? b.post_nummer ?? "") === String(gekozenPostId);
-
-        const zelfdeDatum = String(b.datum ?? "") === String(item.datum ?? "");
-        const zelfdeTijd = String(b.tijd ?? "") === String(item.tijd ?? "");
-
+        const zelfdePost = String(b.post_nummer) === String(gekozenPostNummer);
+        const zelfdeDatum = String(b.datum) === String(item.datum);
+        const zelfdeTijd = String(b.tijd) === String(item.tijd);
         const status = String(b.status || "").toLowerCase().trim();
-        const teltAlsBezet =
-          status !== "afgekeurd" &&
-          status !== "geweigerd";
 
-        return zelfdePost && zelfdeDatum && zelfdeTijd && teltAlsBezet;
+        return (
+          zelfdePost &&
+          zelfdeDatum &&
+          zelfdeTijd &&
+          status !== "afgekeurd" &&
+          status !== "geweigerd"
+        );
       });
 
       return !isBezet;
@@ -264,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (vrijeSlots.length === 0) {
       datumSelect.innerHTML = '<option value="">-- Geen vrije momenten beschikbaar --</option>';
-      slotInfo.textContent = "Voor deze post zijn momenteel geen vrije datums zichtbaar.";
+      slotInfo.textContent = "Voor deze post zijn momenteel geen vrije datums beschikbaar.";
       return;
     }
 
@@ -295,7 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const [datum, tijd] = datumSelect.value.split("|");
-    const postId = parseInt(postSelect.value, 10);
+    const postNummer = parseInt(postSelect.value, 10);
     const datum_tijd = `${datum}T${tijd}:00`;
 
     const aanvraagData = {
@@ -307,17 +298,16 @@ document.addEventListener("DOMContentLoaded", function () {
       datum: datum,
       tijd: tijd,
       datum_tijd: datum_tijd,
-      post_id: postId,
-      post_nummer: postId,
+      post_nummer: postNummer,
       status: "Nieuw"
     };
 
     const { data: bestaande, error: checkError } = await supabase
       .from("aanvragen")
       .select("id, status")
+      .eq("post_nummer", postNummer)
       .eq("datum", datum)
-      .eq("tijd", tijd)
-      .or(`post_id.eq.${postId},post_nummer.eq.${postId}`);
+      .eq("tijd", tijd);
 
     if (checkError) {
       console.error("Fout bij controle bestaande aanvraag:", checkError);
