@@ -8,252 +8,216 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; }
-
 body {
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
+  font-family:'Segoe UI', sans-serif;
+  margin:0;
   background: linear-gradient(160deg, #ff6a00, #ffb347);
-  min-height: 100vh;
+  min-height:100vh;
 }
 
 header {
-  background: #c71f1f;
-  color: white;
-  padding: 18px 20px;
-  text-align: center;
-  font-size: 24px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background:#c71f1f;
+  color:white;
+  padding:18px 20px;
+  text-align:center;
+  font-size:24px;
+  font-weight:700;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
 }
 
 .main {
-  max-width: 1250px;
-  margin: 24px auto;
-  padding: 24px;
+  max-width:1250px;
+  margin:24px auto;
+  padding:24px;
   background: rgba(255,255,255,0.16);
   backdrop-filter: blur(10px);
-  border-radius: 24px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+  border-radius:24px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.18);
 }
 
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
 }
 
-#welcome {
-  color: white;
-  font-size: 20px;
-  font-weight: 600;
-}
+#welcome { color:white; font-size:20px; font-weight:600; }
 
-.topbar-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+.topbar-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
-select,
-input[type="date"],
-input[type="time"] {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
-  font-weight: 500;
-  width: 100%;
+select, input[type="date"], input[type="time"] {
+  padding:10px 12px;
+  border-radius:10px;
+  border:none;
+  font-size:14px;
+  font-weight:500;
 }
 
 button {
-  border: none;
-  border-radius: 16px;
-  padding: 11px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  border:none;
+  border-radius:16px;
+  padding:11px 16px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-button:hover {
-  transform: scale(1.03);
-}
+button:hover { transform: scale(1.03); }
 
-.primary-btn { background: white; color: #ff6a00; }
-.secondary-btn { background: #c71f1f; color: white; }
-.logout-btn { background: #444; color: white; }
+.primary-btn { background:white; color:#ff6a00; }
+.secondary-btn { background:#c71f1f; color:white; }
+.logout-btn { background:#444; color:white; }
 
 #legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 14px 0 18px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:14px 0 18px 0;
 }
 
 .legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.25);
-  color: white;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(255,255,255,0.25);
+  color:white;
+  padding:7px 12px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:500;
 }
 
 .legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.7);
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,0.7);
 }
 
 .calendar-wrap {
-  background: white;
-  border-radius: 18px;
-  padding: 14px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
-  margin-bottom: 24px;
+  background:white;
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 8px 18px rgba(0,0,0,0.08);
+  margin-bottom:24px;
 }
 
-#calendar {
-  min-height: 650px;
-}
+#calendar { min-height:650px; }
 
+/* --- MODAL --- */
 .modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 999;
-  padding: 20px;
-  overflow-y: auto;
+  display:none;
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,0.7);
+  z-index:999;
+  padding:20px;
+  overflow-y:auto;
+  transition: all 0.3s ease;
 }
 
 .modal-content {
-  background: white;
-  max-width: 620px;
-  margin: 50px auto;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+  background:white;
+  max-width:640px;
+  margin:50px auto;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 16px 40px rgba(0,0,0,0.3);
+  animation: popin 0.3s ease;
+}
+
+@keyframes popin {
+  from { transform: scale(0.9); opacity:0; }
+  to { transform: scale(1); opacity:1; }
 }
 
 .modal-header {
-  background: #c71f1f;
-  color: white;
-  padding: 18px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+  background:#c71f1f;
+  color:white;
+  padding:18px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border-top-left-radius:24px;
+  border-top-right-radius:24px;
 }
 
-.modal-header h3 {
-  margin: 0;
-  font-size: 22px;
-}
+.modal-header h3 { margin:0; font-size:22px; }
 
 .close-x {
   background: rgba(255,255,255,0.2);
-  color: white;
-  border-radius: 12px;
-  padding: 8px 12px;
+  color:white;
+  border-radius:12px;
+  padding:8px 12px;
+  cursor:pointer;
 }
 
 .modal-body {
-  padding: 20px;
-  color: black;
+  padding:24px;
+  color:#333;
 }
 
 .info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
-  margin-bottom: 16px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 16px;
+  margin-bottom:16px;
 }
 
 .info-item {
-  background: #f7f7f7;
-  border-radius: 14px;
-  padding: 12px;
-  font-size: 14px;
+  background:#f7f7f7;
+  border-radius:14px;
+  padding:12px;
+  font-size:14px;
 }
 
-.info-item strong {
-  display: block;
-  margin-bottom: 4px;
-  color: #333;
+.info-item strong { display:block; margin-bottom:4px; color:#222; }
+
+.user-cards {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:16px;
 }
 
-.status-box,
-.user-state,
-.availability-box {
-  padding: 14px;
-  border-radius: 14px;
-  background: #fff7ef;
-  margin-bottom: 16px;
-  font-size: 14px;
-  line-height: 1.5;
+.user-card {
+  background: linear-gradient(135deg,#fff7ef,#ffe0c0);
+  padding:12px 16px;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:120px;
+  text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  font-size:14px;
 }
 
-.user-state { background: #f2f6ff; }
+.user-card span { font-weight:600; }
 
-.modal-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+.modal-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; }
 
-.btn-approve { background: #1b8f3a; color: white; }
-.btn-reject { background: #c71f1f; color: white; }
+.btn-approve { background:#1b8f3a; color:white; }
+.btn-reject { background:#c71f1f; color:white; }
 
-.admin-actions {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid #eee;
-}
+.admin-actions { margin-top:18px; padding-top:16px; border-top:1px solid #eee; }
+.admin-actions-title { font-weight:700; margin-bottom:10px; }
+.small-note { font-size:12px; color:#666; margin-top:10px; }
 
-.admin-actions-title {
-  font-weight: 700;
-  margin-bottom: 10px;
-}
+.field-group { margin-bottom:14px; }
+.field-group label { display:block; margin-bottom:6px; font-weight:700; color:#222; }
 
-.small-note {
-  font-size: 12px;
-  color: #666;
-  margin-top: 10px;
-}
-
-.field-group {
-  margin-bottom: 14px;
-}
-
-.field-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 700;
-  color: #222;
-}
-
-@media (max-width: 700px) {
-  .info-grid { grid-template-columns: 1fr; }
-  .main { margin: 12px; padding: 16px; }
-  .modal-content { margin: 10px auto; }
-  .topbar-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .topbar-actions button,
-  .topbar-actions select {
-    width: 100%;
-  }
+@media (max-width:700px) {
+  .info-grid { grid-template-columns:1fr; }
+  .main { margin:12px; padding:16px; }
+  .modal-content { margin:10px auto; }
+  .topbar-actions { flex-direction:column; align-items:stretch; }
+  .topbar-actions button, .topbar-actions select { width:100%; }
 }
 </style>
 </head>
@@ -264,7 +228,6 @@ button:hover {
 <div class="main">
   <div class="topbar">
     <div id="welcome">Welkom!</div>
-
     <div class="topbar-actions">
       <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
       <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
@@ -292,16 +255,12 @@ button:hover {
     </div>
     <div class="modal-body">
       <div id="eventDetails" class="info-grid"></div>
-      <div id="bezettingBox" class="status-box"></div>
-      <div id="userStateBox" class="user-state"></div>
 
-      <div id="availabilityBox" class="availability-box">
-        <strong>Beschikbaarheid:</strong>
-        <div id="currentUsers"></div>
-        <div class="modal-actions" style="margin-top:10px;">
-          <button id="btnJoinEvent" class="btn-approve">✔️ Ik kan komen</button>
-          <button id="btnFindReplacement" class="btn-reject">🔄 Vervanger zoeken</button>
-        </div>
+      <div id="availabilityBox" class="user-cards"></div>
+
+      <div class="modal-actions">
+        <button id="btnJoinEvent" class="btn-approve">✔️ Ik kan komen</button>
+        <button id="btnFindReplacement" class="btn-reject">🔄 Vervanger aanduiden</button>
       </div>
 
       <div id="adminActions" class="admin-actions" style="display:none;">
@@ -321,66 +280,53 @@ button:hover {
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 
 <script>
-const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL="https://elmkjlqcsshctmnbqbfq.supabase.co";
+const SUPABASE_KEY="sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentUser = null;
-let currentProfile = null;
-let selectedEvent = null;
-let calendar = null;
-let realtimeChannels = [];
-let posten = [];
+let currentUser=null;
+let currentProfile=null;
+let selectedEvent=null;
+let calendar=null;
+let posten=[];
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async()=>{
   bindButtons();
   startCalendar();
   await initPage();
 });
 
-function bindButtons() {
+function bindButtons(){
   document.getElementById("logoutBtn").addEventListener("click", logout);
-  document.getElementById("refreshBtn").addEventListener("click", async () => { await refreshAll(); });
+  document.getElementById("refreshBtn").addEventListener("click", async()=>{ await refreshAll(); });
   document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-  document.getElementById("approveBtn").addEventListener("click", () => updateStatusAanvraag("Goedgekeurd"));
-  document.getElementById("rejectBtn").addEventListener("click", () => updateStatusAanvraag("Geweigerd"));
-  document.getElementById("adminBtn").addEventListener("click", () => { window.location.href="admin.html"; });
-
-  document.getElementById("filterPost").addEventListener("change", async () => { await loadEvents(document.getElementById("filterPost").value); });
-
+  document.getElementById("approveBtn").addEventListener("click",()=>updateStatusAanvraag("Goedgekeurd"));
+  document.getElementById("rejectBtn").addEventListener("click",()=>updateStatusAanvraag("Geweigerd"));
+  document.getElementById("adminBtn").addEventListener("click",()=>{ window.location.href="admin.html"; });
+  document.getElementById("filterPost").addEventListener("change", async()=>{ await loadEvents(document.getElementById("filterPost").value); });
   document.getElementById("btnJoinEvent").addEventListener("click", joinEvent);
-  document.getElementById("btnFindReplacement").addEventListener("click", () => { alert("Vervanger zoeken nog te implementeren."); });
-
-  window.addEventListener("click", (e) => {
-    if(e.target === document.getElementById("modal")) closeModal();
-  });
+  document.getElementById("btnFindReplacement").addEventListener("click", findReplacement);
+  window.addEventListener("click",(e)=>{ if(e.target===document.getElementById("modal")) closeModal(); });
 }
 
-async function initPage() {
+async function initPage(){
   const { data: authData } = await client.auth.getUser();
   if(!authData?.user){ window.location.href="login.html"; return; }
   currentUser = authData.user;
-
-  const { data: profile } = await client.from("profiles").select("*").eq("user_id", currentUser.id).maybeSingle();
+  const { data: profile } = await client.from("profiles").select("*").eq("user_id",currentUser.id).maybeSingle();
   if(!profile){ alert("Profiel niet gevonden."); window.location.href="login.html"; return; }
-  currentProfile = profile;
-  document.getElementById("welcome").textContent = `Welkom, ${profile.name || profile.email || "gebruiker"}!`;
-
+  currentProfile=profile;
+  document.getElementById("welcome").textContent=`Welkom, ${profile.name||profile.email||"gebruiker"}!`;
   if(profile.is_admin){ document.getElementById("adminBtn").style.display="inline-block"; document.getElementById("adminActions").style.display="block"; }
-
   await laadPosten();
   bouwLegend();
   vulPostFilter();
   await refreshAll();
-  startRealtime();
 }
 
-async function laadPosten() {
-  const { data, error } = await client.from("posten").select("*").order("id",{ascending:true});
-  posten = error ? [
-    {id:1, naam:"Post Balen", kleur:"#e6194b", icoon:"🚒"},
-    {id:2, naam:"Post Geel", kleur:"#3cb44b", icoon:"🧯"}
-  ] : (data || []);
+async function laadPosten(){
+  const { data,error } = await client.from("posten").select("*").order("id",{ascending:true});
+  posten = error ? [{id:1,naam:"Post Balen",kleur:"#e6194b",icoon:"🚒"}] : (data||[]);
 }
 
 function bouwLegend(){
@@ -412,26 +358,16 @@ function startCalendar(){
 
 async function refreshAll(){ await loadEvents(document.getElementById("filterPost").value); }
 
-async function loadEvents(postFilter="") {
-  let query = client.from("aanvragen").select(`*, posten:post_id(id, naam, kleur, icoon)`).eq("status","Goedgekeurd").order("datum_tijd",{ascending:true});
-  if(postFilter) query = query.eq("post_id", Number(postFilter));
-  const { data, error } = await query;
-  if(error){ console.error(error); return; }
-
-  calendar.removeAllEvents();
-  if(!data) return;
-
+async function loadEvents(postFilter=""){
+  let query=client.from("aanvragen").select(`*, posten:post_id(id,naam,kleur,icoon)`).eq("status","Goedgekeurd").order("datum_tijd",{ascending:true});
+  if(postFilter) query=query.eq("post_id",Number(postFilter));
+  const { data,error } = await query; if(error){ console.error(error); return; }
+  calendar.removeAllEvents(); if(!data) return;
   data.forEach(item=>{
     const post=item.posten||posten.find(p=>p.id===item.post_id)||null;
     const startDatum=item.datum_tijd||item.datum;
     if(!startDatum) return;
-    calendar.addEvent({
-      id:String(item.id),
-      title:`${post?.icoon||"🔥"} ${item.school||"Bezoek"}`,
-      start:startDatum,
-      color:post?.kleur||"#ff6a00",
-      extendedProps:{...item, postNaam:post?.naam||"Onbekende post", postKleur:post?.kleur||"#ff6a00", postIcoon:post?.icoon||"🔥"}
-    });
+    calendar.addEvent({ id:String(item.id), title:`${post?.icoon||"🔥"} ${item.school||"Bezoek"}`, start:startDatum, color:post?.kleur||"#ff6a00", extendedProps:{...item, postNaam:post?.naam||"Onbekende post", postKleur:post?.kleur||"#ff6a00", postIcoon:post?.icoon||"🔥"} });
   });
 }
 
@@ -444,8 +380,6 @@ async function openEventModal(event){
     <div class="info-item"><strong>Post</strong>${props.postIcoon||""} ${props.postNaam||"-"}</div>
     <div class="info-item"><strong>Datum</strong>${formatDateTime(event.start)}</div>
     <div class="info-item"><strong>Status</strong>${props.status||"-"}</div>`;
-  document.getElementById("bezettingBox").innerHTML=`Bezoek ingepland voor <strong>${props.school||"bezoek"}</strong>.`;
-  document.getElementById("userStateBox").innerHTML=`Hier zie je de details van dit ingeplande bezoek.`;
   await loadAvailability();
   document.getElementById("modal").style.display="block";
 }
@@ -453,33 +387,34 @@ async function openEventModal(event){
 async function loadAvailability(){
   if(!selectedEvent) return;
   const { data: users } = await client.from("beschikbaarheid").select("*").eq("aanvraag_id",selectedEvent.id);
-  const userDiv=document.getElementById("currentUsers"); userDiv.innerHTML="";
-  if(!users||users.length===0){ userDiv.textContent="Nog geen gebruikers beschikbaar."; }
-  else{
-    users.forEach(u=>{
-      const name=u.user_name||u.name||u.user_email||"Onbekende gebruiker";
-      const status=u.aanwezig ? "✅ aanwezig" : (u.ruil_gevraagd ? "🔄 ruil gevraagd" : "");
-      const div=document.createElement("div"); div.textContent=`- ${name} ${status}`; userDiv.appendChild(div);
-    });
-  }
+  const box=document.getElementById("availabilityBox"); box.innerHTML="";
+  if(!users||users.length===0){ box.textContent="Nog geen gebruikers beschikbaar."; return; }
 
-  const btnJoin=document.getElementById("btnJoinEvent");
-  const btnReplacement=document.getElementById("btnFindReplacement");
-  if(users.length>=2){ btnJoin.disabled=true; btnJoin.textContent="✅ Volzet"; btnReplacement.disabled=false; }
-  else{ btnJoin.disabled=false; btnJoin.textContent="✔️ Ik kan komen"; btnReplacement.disabled=true; }
+  users.forEach(u=>{
+    const div=document.createElement("div"); div.className="user-card";
+    const name=u.user_name||u.name||u.user_email||"Onbekende gebruiker";
+    const status=u.aanwezig ? "✅ Aanwezig" : (u.ruil_gevraagd ? "🔄 Ruil gevraagd" : "❌ Niet aanwezig");
+    div.innerHTML=`<span>${name}</span><small>${status}</small>`;
+    box.appendChild(div);
+  });
 }
 
 async function joinEvent(){
   if(!selectedEvent) return;
   const { data: existing } = await client.from("beschikbaarheid").select("*").eq("aanvraag_id",selectedEvent.id).eq("user_id",currentUser.id).maybeSingle();
   if(existing){ alert("Je bent al ingeschreven!"); return; }
-  const { data: allUsers } = await client.from("beschikbaarheid").select("*").eq("aanvraag_id",selectedEvent.id);
-  if(allUsers.length>=2){ alert("Event vol. Gebruik 'Vervanger zoeken'."); return; }
-
   const { error } = await client.from("beschikbaarheid").insert([{ aanvraag_id:selectedEvent.id, user_id:currentUser.id, user_email:currentUser.email, user_name:currentProfile.name }]);
   if(error){ alert("Fout bij inschrijven: "+error.message); return; }
-  alert("Inschrijving geslaagd!");
   await loadAvailability();
+}
+
+async function findReplacement(){
+  const naam = prompt("Geef de naam of email van de vervanger:");
+  if(!naam) return;
+  const { error } = await client.from("beschikbaarheid").insert([{ aanvraag_id:selectedEvent.id, user_name:naam, ruil_gevraagd:true }]);
+  if(error){ alert("Fout bij vervanger: "+error.message); return; }
+  await loadAvailability();
+  alert("Vervanger toegevoegd!");
 }
 
 function closeModal(){ document.getElementById("modal").style.display="none"; }
@@ -493,14 +428,6 @@ async function updateStatusAanvraag(status){
 }
 
 async function logout(){ await client.auth.signOut(); window.location.href="login.html"; }
-
-// Optioneel: Realtime updates
-function startRealtime(){
-  const channel = client.channel("realtime_beschikbaarheid");
-  channel.on("postgres_changes", { event:"INSERT", schema:"public", table:"beschikbaarheid" }, payload=>{
-    if(selectedEvent && payload.new.aanvraag_id===selectedEvent.id) loadAvailability();
-  }).subscribe();
-}
 </script>
 
 </body>
