@@ -179,6 +179,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const slotInfo = document.getElementById("slotInfo");
   const form = document.getElementById("aanvraagForm");
 
+  function normaliseerTijd(tijd) {
+    if (!tijd) return "";
+    return String(tijd).substring(0, 5);
+  }
+
   async function laadPosten() {
     const { data, error } = await supabase
       .from("posten")
@@ -202,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function laadBeschikbareSlots() {
-    const gekozenPostId = postSelect.value;
+    const gekozenPostId = String(postSelect.value);
 
     datumSelect.innerHTML = '<option value="">-- Kies datum & uur --</option>';
     slotInfo.textContent = "";
@@ -214,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const { data: datums, error: err1 } = await supabase
       .from("beschikbare_datums")
-      .select("datum, tijd, post_id")
+      .select("id, datum, tijd, post_id")
       .eq("post_id", gekozenPostId)
       .order("datum", { ascending: true })
       .order("tijd", { ascending: true });
@@ -222,6 +227,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (err1) {
       console.error("Fout bij laden beschikbare datums:", err1);
       slotInfo.textContent = "Fout bij laden van de beschikbare datums.";
+      return;
+    }
+
+    if (!datums || datums.length === 0) {
+      datumSelect.innerHTML = '<option value="">-- Geen vrije momenten beschikbaar --</option>';
+      slotInfo.textContent = "Voor deze post zijn momenteel geen beschikbare datums ingevoerd.";
       return;
     }
 
@@ -236,11 +247,11 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const vrijeSlots = (datums || []).filter(item => {
+    const vrijeSlots = datums.filter(item => {
       const isBezet = (bezetData || []).some(b => {
-        const zelfdePost = String(b.post_id) === String(gekozenPostId);
+        const zelfdePost = String(b.post_id) === gekozenPostId;
         const zelfdeDatum = String(b.datum) === String(item.datum);
-        const zelfdeTijd = String(b.tijd) === String(item.tijd);
+        const zelfdeTijd = normaliseerTijd(b.tijd) === normaliseerTijd(item.tijd);
         const status = String(b.status || "").toLowerCase().trim();
 
         return (
@@ -262,10 +273,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     vrijeSlots.forEach(item => {
-      const key = `${item.datum}|${item.tijd}`;
+      const datum = String(item.datum);
+      const tijd = normaliseerTijd(item.tijd);
+      const key = `${datum}|${tijd}`;
+
       const option = document.createElement("option");
       option.value = key;
-      option.textContent = `🔥 ${item.datum} om ${item.tijd}`;
+      option.textContent = `🔥 ${datum} om ${tijd}`;
       datumSelect.appendChild(option);
     });
 
@@ -287,7 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const [datum, tijd] = datumSelect.value.split("|");
+    const [datum, ruweTijd] = datumSelect.value.split("|");
+    const tijd = normaliseerTijd(ruweTijd);
     const postId = parseInt(postSelect.value, 10);
     const datum_tijd = `${datum}T${tijd}:00`;
 
@@ -306,10 +321,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const { data: bestaande, error: checkError } = await supabase
       .from("aanvragen")
-      .select("id, status")
+      .select("id, status, tijd")
       .eq("post_id", postId)
-      .eq("datum", datum)
-      .eq("tijd", tijd);
+      .eq("datum", datum);
 
     if (checkError) {
       console.error("Fout bij controle bestaande aanvraag:", checkError);
@@ -319,7 +333,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const effectiefBezet = (bestaande || []).some(item => {
       const status = String(item.status || "").toLowerCase().trim();
-      return status !== "afgekeurd" && status !== "geweigerd";
+      const zelfdeTijd = normaliseerTijd(item.tijd) === tijd;
+      return zelfdeTijd && status !== "afgekeurd" && status !== "geweigerd";
     });
 
     if (effectiefBezet) {
