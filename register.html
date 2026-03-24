@@ -6,52 +6,195 @@
 <title>Registreren</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Segoe UI';
-  background: linear-gradient(160deg,#ff6a00,#ffb347);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(160deg, #ff6a00, #ffb347);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
 }
 
 .container {
   background: rgba(255,255,255,0.15);
-  backdrop-filter:blur(10px);
-  padding:30px;
-  border-radius:25px;
-  width:350px;
-  text-align:center;
-  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 30px;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.22);
 }
 
-h2 { color:white; margin-bottom:20px; }
+h2 {
+  color: white;
+  margin-bottom: 22px;
+  font-size: 28px;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
 
 input {
-  width:100%;
-  padding:12px;
-  margin-bottom:15px;
-  border-radius:15px;
-  border:none;
-  font-size:16px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  outline: none;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+}
+
+input:focus {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
 }
 
 button {
-  width:100%;
-  padding:15px;
-  background:white;
-  color:#ff6a00;
-  font-weight:bold;
-  font-size:16px;
-  border-radius:20px;
-  border:none;
-  cursor:pointer;
+  width: 100%;
+  padding: 15px;
+  background: white;
+  color: #ff6a00;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-button:hover { transform:scale(1.03); }
+button:hover {
+  transform: scale(1.03);
+}
 
-p { color:white; margin-top:15px; }
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+p {
+  color: white;
+  margin-top: 18px;
+  font-size: 15px;
+}
+
+p a {
+  color: white;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* Popup */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 9999;
+}
+
+.popup-overlay.show {
+  display: flex;
+}
+
+.popup-box {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,245,238,0.96));
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+  animation: popupIn 0.25s ease;
+}
+
+.popup-top {
+  padding: 18px 20px;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.popup-top.success {
+  background: linear-gradient(135deg, #ff6a00, #ff9f43);
+}
+
+.popup-top.error {
+  background: linear-gradient(135deg, #c71f1f, #ff6a00);
+}
+
+.popup-body {
+  padding: 22px 20px 18px;
+  text-align: center;
+  color: #333;
+}
+
+.popup-icon {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.popup-message {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.popup-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff6a00, #ff9f43);
+  color: white;
+  box-shadow: 0 8px 18px rgba(255,106,0,0.25);
+}
+
+.popup-btn:hover {
+  transform: scale(1.02);
+}
+
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 24px 20px;
+    border-radius: 24px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  input,
+  button {
+    font-size: 16px;
+  }
+}
 </style>
 </head>
 
@@ -60,61 +203,128 @@ p { color:white; margin-top:15px; }
 <div class="container">
   <h2>👨‍🚒 Registreren</h2>
 
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Wachtwoord">
+  <div class="input-group">
+    <input type="email" id="email" placeholder="Email" autocomplete="email">
+  </div>
 
-  <!-- ❌ onclick verwijderd -->
+  <div class="input-group">
+    <input type="password" id="password" placeholder="Wachtwoord" autocomplete="new-password">
+  </div>
+
   <button id="registerBtn">Registreren</button>
 
-  <p>Al een account?
-    <a href="login.html" style="color:white;text-decoration:underline;">Login</a>
+  <p>
+    Al een account?
+    <a href="login.html">Login</a>
   </p>
 </div>
 
-<!-- ✅ Supabase v2 -->
+<div id="popup" class="popup-overlay">
+  <div class="popup-box">
+    <div id="popupTop" class="popup-top success">Melding</div>
+    <div class="popup-body">
+      <div id="popupIcon" class="popup-icon">🔥</div>
+      <div id="popupMessage" class="popup-message">Bericht</div>
+      <button id="popupCloseBtn" class="popup-btn">OK</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   const client = window.supabase.createClient(
     "https://elmkjlqcsshctmnbqbfq.supabase.co",
     "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i"
   );
 
-  document.getElementById("registerBtn").addEventListener("click", async () => {
+  const registerBtn = document.getElementById("registerBtn");
+  const popup = document.getElementById("popup");
+  const popupTop = document.getElementById("popupTop");
+  const popupIcon = document.getElementById("popupIcon");
+  const popupMessage = document.getElementById("popupMessage");
+  const popupCloseBtn = document.getElementById("popupCloseBtn");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  let redirectAfterClose = null;
+
+  function showPopup(type, title, message, redirectUrl = null) {
+    popupTop.textContent = title;
+    popupMessage.textContent = message;
+    redirectAfterClose = redirectUrl;
+
+    popupTop.classList.remove("success", "error");
+
+    if (type === "success") {
+      popupTop.classList.add("success");
+      popupIcon.textContent = "✅";
+    } else {
+      popupTop.classList.add("error");
+      popupIcon.textContent = "⚠️";
+    }
+
+    popup.classList.add("show");
+  }
+
+  function closePopup() {
+    popup.classList.remove("show");
+
+    if (redirectAfterClose) {
+      window.location.href = redirectAfterClose;
+    }
+  }
+
+  popupCloseBtn.addEventListener("click", closePopup);
+
+  popup.addEventListener("click", (e) => {
+    if (e.target === popup) {
+      closePopup();
+    }
+  });
+
+  async function register() {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
     if (!email || !password) {
-      alert("Vul email en wachtwoord in!");
+      showPopup("error", "Ontbrekende gegevens", "Vul je e-mail en wachtwoord in.");
       return;
     }
 
-    // 🔐 Account aanmaken
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Bezig met registreren...";
+
     const { data, error } = await client.auth.signUp({
       email,
       password
     });
 
     if (error) {
-      alert("Fout bij registratie: " + error.message);
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Registreren";
+      showPopup("error", "Registratie mislukt", "Fout bij registratie: " + error.message);
       return;
     }
 
-    // 🔥 User ID ophalen via getUser()
-    const { data: userData } = await client.auth.getUser();
+    const user = data?.user;
 
-    if (!userData.user) {
-      alert("Registratie gelukt! Controleer je email om te bevestigen.");
+    if (!user) {
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Registreren";
+      showPopup(
+        "success",
+        "Bijna klaar",
+        "Registratie gelukt! Controleer je e-mail om je account te bevestigen.",
+        "login.html"
+      );
       return;
     }
 
-    // 👤 Profiel aanmaken
     const { error: profileError } = await client.from("profiles").insert([
       {
-        user_id: userData.user.id,
+        user_id: user.id,
         email: email,
         approved: true,
         is_admin: false
@@ -122,18 +332,36 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
 
     if (profileError) {
-      alert("Fout bij profiel aanmaken: " + profileError.message);
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Registreren";
+      showPopup("error", "Profiel fout", "Fout bij profiel aanmaken: " + profileError.message);
       return;
     }
 
-    alert("✅ Account succesvol aangemaakt!");
-    window.location.href = "login.html";
+    registerBtn.textContent = "Gelukt!";
+    showPopup(
+      "success",
+      "Account aangemaakt",
+      "Je account werd succesvol aangemaakt.",
+      "login.html"
+    );
+  }
 
+  registerBtn.addEventListener("click", register);
+
+  passwordInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      register();
+    }
   });
 
+  emailInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      register();
+    }
+  });
 });
 </script>
-
 
 </body>
 </html>
