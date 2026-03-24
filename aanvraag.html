@@ -72,6 +72,17 @@
       margin-top: 8px;
       font-size: 14px;
       color: rgba(255,255,255,0.95);
+      white-space: pre-line;
+    }
+
+    .debug-box {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.25);
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .btn {
@@ -152,6 +163,7 @@
           <option value="">-- Kies eerst een post --</option>
         </select>
         <div class="info-note" id="slotInfo"></div>
+        <div class="debug-box" id="debugBox">Debug info verschijnt hier...</div>
       </div>
 
       <button type="submit" class="btn">Aanvraag versturen 🔥</button>
@@ -177,11 +189,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const postSelect = document.getElementById("postSelect");
   const datumSelect = document.getElementById("datumSelect");
   const slotInfo = document.getElementById("slotInfo");
+  const debugBox = document.getElementById("debugBox");
   const form = document.getElementById("aanvraagForm");
 
   function normaliseerTijd(tijd) {
     if (!tijd) return "";
     return String(tijd).substring(0, 5);
+  }
+
+  function setDebug(title, data) {
+    debugBox.textContent = title + "\n\n" + JSON.stringify(data, null, 2);
   }
 
   async function laadPosten() {
@@ -193,6 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (error) {
       console.error("Fout bij laden posten:", error);
       slotInfo.textContent = "Fout bij laden van de posten.";
+      setDebug("Fout bij laden posten", error);
       return;
     }
 
@@ -200,20 +218,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     (data || []).forEach(post => {
       const option = document.createElement("option");
-      option.value = post.id;
+      option.value = String(post.id);
       option.textContent = `${post.icoon || "🚒"} ${post.naam}`;
       postSelect.appendChild(option);
     });
+
+    setDebug("Posten geladen", data);
   }
 
   async function laadBeschikbareSlots() {
-    const gekozenPostId = String(postSelect.value);
+    const gekozenPostId = Number(postSelect.value);
 
     datumSelect.innerHTML = '<option value="">-- Kies datum & uur --</option>';
     slotInfo.textContent = "";
 
     if (!gekozenPostId) {
       datumSelect.innerHTML = '<option value="">-- Kies eerst een post --</option>';
+      setDebug("Geen post gekozen", { gekozenPostId });
       return;
     }
 
@@ -227,12 +248,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (err1) {
       console.error("Fout bij laden beschikbare datums:", err1);
       slotInfo.textContent = "Fout bij laden van de beschikbare datums.";
-      return;
-    }
-
-    if (!datums || datums.length === 0) {
-      datumSelect.innerHTML = '<option value="">-- Geen vrije momenten beschikbaar --</option>';
-      slotInfo.textContent = "Voor deze post zijn momenteel geen beschikbare datums ingevoerd.";
+      setDebug("Fout bij query beschikbare_datums", err1);
       return;
     }
 
@@ -244,12 +260,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (err2) {
       console.error("Fout bij laden ingenomen slots:", err2);
       slotInfo.textContent = "Fout bij laden van de reeds ingenomen slots.";
+      setDebug("Fout bij query aanvragen", err2);
       return;
     }
 
-    const vrijeSlots = datums.filter(item => {
+    const vrijeSlots = (datums || []).filter(item => {
       const isBezet = (bezetData || []).some(b => {
-        const zelfdePost = String(b.post_id) === gekozenPostId;
+        const zelfdePost = Number(b.post_id) === gekozenPostId;
         const zelfdeDatum = String(b.datum) === String(item.datum);
         const zelfdeTijd = normaliseerTijd(b.tijd) === normaliseerTijd(item.tijd);
         const status = String(b.status || "").toLowerCase().trim();
@@ -265,6 +282,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       return !isBezet;
     });
+
+    setDebug("Debug laadBeschikbareSlots", {
+      gekozenPostId,
+      datums,
+      bezetData,
+      vrijeSlots
+    });
+
+    if (!datums || datums.length === 0) {
+      datumSelect.innerHTML = '<option value="">-- Geen vrije momenten beschikbaar --</option>';
+      slotInfo.textContent = "Geen records gevonden in beschikbare_datums voor deze post.";
+      return;
+    }
 
     if (vrijeSlots.length === 0) {
       datumSelect.innerHTML = '<option value="">-- Geen vrije momenten beschikbaar --</option>';
@@ -303,7 +333,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const [datum, ruweTijd] = datumSelect.value.split("|");
     const tijd = normaliseerTijd(ruweTijd);
-    const postId = parseInt(postSelect.value, 10);
+    const postId = Number(postSelect.value);
     const datum_tijd = `${datum}T${tijd}:00`;
 
     const aanvraagData = {
@@ -328,6 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (checkError) {
       console.error("Fout bij controle bestaande aanvraag:", checkError);
       alert("Fout bij controle van bestaande aanvragen.");
+      setDebug("Fout bij controle bestaande aanvraag", checkError);
       return;
     }
 
@@ -350,6 +381,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (error) {
       console.error("Insert fout:", error);
       alert("Fout bij verzenden 😢: " + error.message);
+      setDebug("Insert fout", error);
       return;
     }
 
