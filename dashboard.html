@@ -1,422 +1,1095 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard – Bezoeken</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Bezoekaanvragen</title>
 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 
-<style>
-* { box-sizing: border-box; }
+  <style>
+    * { box-sizing: border-box; }
 
-body {
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  background: linear-gradient(160deg, #ff6a00, #ffb347);
-  min-height: 100vh;
-}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(160deg, #ff6a00, #ffb347);
+      min-height: 100vh;
+    }
 
-header {
-  background: #c71f1f;
-  color: white;
-  padding: 18px 20px;
-  text-align: center;
-  font-size: 24px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+    header {
+      background: linear-gradient(90deg, #b81414, #d62828);
+      color: white;
+      padding: 18px 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+    }
 
-.main {
-  max-width: 1250px;
-  margin: 24px auto;
-  padding: 24px;
-  background: rgba(255,255,255,0.16);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-}
+    .main {
+      max-width: 1250px;
+      margin: 24px auto;
+      padding: 24px;
+      background: rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-}
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
 
-#welcome { color:white; font-size:20px; font-weight:600; }
+    #welcome {
+      color: white;
+      font-size: 20px;
+      font-weight: 600;
+    }
 
-.topbar-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
-select, input[type="date"], input[type="time"] {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
-  font-weight: 500;
-  width: 100%;
-}
+    select {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+    }
 
-button {
-  border: none;
-  border-radius: 16px;
-  padding: 11px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    }
 
-button:hover { transform: scale(1.03); }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
 
-.primary-btn { background: white; color: #ff6a00; }
-.secondary-btn { background: #c71f1f; color: white; }
-.logout-btn { background: #444; color: white; }
+    .primary-btn { background: white; color: #ff6a00; }
+    .secondary-btn { background: #c71f1f; color: white; }
+    .logout-btn { background: #444; color: white; }
 
-#legend { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 18px 0; }
-.legend-item { display:flex; align-items:center; gap:8px; background: rgba(255,255,255,0.25); color:white; padding:7px 12px; border-radius:999px; font-size:13px; font-weight:500; }
-.legend-color { width:14px; height:14px; border-radius:50%; border:1px solid rgba(255,255,255,0.7); }
+    #legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0 18px 0;
+    }
 
-.calendar-wrap {
-  background:white;
-  border-radius:18px;
-  padding:14px;
-  box-shadow:0 8px 18px rgba(0,0,0,0.08);
-  margin-bottom:24px;
-}
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.25);
+      color: white;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+    }
 
-#calendar { min-height:650px; }
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.7);
+    }
 
-.modal, .popup-notification {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 999;
-  padding: 20px;
-  overflow-y: auto;
-  animation: fadeIn 0.3s ease;
-}
+    .calendar-wrap {
+      background: white;
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
 
-.modal-content, .popup-content {
-  background: white;
-  max-width: 620px;
-  margin: 50px auto;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
-  animation: slideUp 0.3s ease;
-}
+    #calendar {
+      min-height: 650px;
+    }
 
-@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-@keyframes slideUp { from {transform: translateY(50px);} to {transform: translateY(0);} }
+    .fc .fc-toolbar-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #c71f1f;
+    }
 
-.modal-header, .popup-header {
-  background: #c71f1f;
-  color: white;
-  padding: 18px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
+    .fc .fc-button {
+      border-radius: 12px !important;
+      border: none !important;
+      background: #ff6a00 !important;
+      font-weight: 700 !important;
+    }
 
-.close-x {
-  background: rgba(255,255,255,0.2);
-  color:white;
-  border-radius:12px;
-  padding:8px 12px;
-  cursor:pointer;
-}
+    .fc .fc-button:hover {
+      opacity: 0.92;
+    }
 
-.modal-body, .popup-body {
-  padding: 20px;
-  color: black;
-}
+    .fc .fc-button-primary:not(:disabled).fc-button-active {
+      background: #c71f1f !important;
+    }
 
-.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin-bottom:16px; }
-.info-item { background:#f7f7f7; border-radius:14px; padding:12px; font-size:14px; }
-.info-item strong { display:block; margin-bottom:4px; color:#333; }
+    .fc-event {
+      border: none !important;
+      border-radius: 12px !important;
+      padding: 2px 4px !important;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-.status-box, .user-state { padding:14px; border-radius:14px; background:#fff7ef; margin-bottom:16px; font-size:14px; line-height:1.5; }
-.user-state { background:#f2f6ff; }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 16, 8, 0.62);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      padding: 16px;
+      overflow-y: auto;
+    }
 
-.modal-actions, .popup-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-.btn-approve { background:#1b8f3a; color:white; }
-.btn-reject { background:#c71f1f; color:white; }
+    .modal-content {
+      background: linear-gradient(180deg, #fff8f2 0%, #ffffff 100%);
+      max-width: 720px;
+      margin: 30px auto;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 22px 60px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,106,0,0.18);
+      animation: popupIn 0.18s ease;
+    }
 
-.field-group { margin-bottom:14px; }
-.field-group label { display:block; margin-bottom:6px; font-weight:700; color:#222; }
+    @keyframes popupIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-@media (max-width:700px) {
-  .info-grid { grid-template-columns:1fr; }
-  .main { margin:12px; padding:16px; }
-  .modal-content, .popup-content { margin:10px auto; }
-  .topbar-actions { flex-direction:column; align-items:stretch; }
-  .topbar-actions button, .topbar-actions select { width:100%; }
-}
-</style>
+    .modal-header {
+      background: linear-gradient(135deg, #c71f1f, #ff6a00);
+      color: white;
+      padding: 20px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      opacity: 0.92;
+    }
+
+    .close-x {
+      background: rgba(255,255,255,0.18);
+      color: white;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .modal-body {
+      padding: 22px;
+      color: #222;
+    }
+
+    .hero-strip {
+      background: linear-gradient(135deg, rgba(255,106,0,0.10), rgba(199,31,31,0.10));
+      border: 1px solid rgba(255,106,0,0.15);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ff6a00, #c71f1f);
+      color: white;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 10px 18px rgba(255,106,0,0.22);
+    }
+
+    .hero-text strong {
+      display: block;
+      color: #b51f1f;
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .hero-text span {
+      color: #5b4c42;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .info-item {
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 14px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+    }
+
+    .info-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #c71f1f;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-box,
+    .user-state,
+    .crew-box {
+      padding: 16px;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.55;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .status-box {
+      background: linear-gradient(135deg, #fff6ef, #fff2e8);
+    }
+
+    .user-state {
+      background: linear-gradient(135deg, #eef6ff, #f7fbff);
+    }
+
+    .crew-box {
+      background: linear-gradient(135deg, #fffaf0, #fff4dc);
+    }
+
+    .crew-list {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .crew-pill {
+      background: white;
+      border: 1px solid rgba(255,106,0,0.22);
+      color: #9a3f00;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .crew-pill.empty {
+      color: #777;
+      border-color: rgba(0,0,0,0.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-signup {
+      background: linear-gradient(135deg, #1b8f3a, #2dbb57);
+      color: white;
+    }
+
+    .btn-leave {
+      background: linear-gradient(135deg, #757575, #5f5f5f);
+      color: white;
+    }
+
+    .btn-replace {
+      background: linear-gradient(135deg, #ff8a00, #ff5e00);
+      color: white;
+    }
+
+    .btn-approve { background: #1b8f3a; color: white; }
+    .btn-reject { background: #c71f1f; color: white; }
+
+    .admin-actions {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px dashed rgba(0,0,0,0.12);
+    }
+
+    .admin-actions-title {
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: #c71f1f;
+      font-size: 15px;
+    }
+
+    .small-note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 12000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      min-width: 280px;
+      max-width: 380px;
+      background: linear-gradient(135deg, #ffffff, #fff8f2);
+      border-left: 6px solid #ff6a00;
+      color: #2b2b2b;
+      border-radius: 18px;
+      box-shadow: 0 16px 34px rgba(0,0,0,0.22);
+      padding: 14px 16px;
+      animation: toastIn 0.22s ease;
+    }
+
+    .toast.success { border-left-color: #1b8f3a; }
+    .toast.error { border-left-color: #c71f1f; }
+    .toast.info { border-left-color: #ff6a00; }
+
+    .toast-title {
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: #c71f1f;
+    }
+
+    .toast.success .toast-title { color: #1b8f3a; }
+    .toast.error .toast-title { color: #c71f1f; }
+
+    .toast-message {
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 700px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .main { margin: 12px; padding: 16px; }
+      .modal-content { margin: 10px auto; border-radius: 22px; }
+      .topbar-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .topbar-actions button,
+      .topbar-actions select {
+        width: 100%;
+      }
+      .modal-actions button {
+        width: 100%;
+      }
+      .toast-wrap {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+      }
+      .toast {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header>🔥 Dashboard Bezoekaanvragen</header>
+  <header>🔥 Dashboard Bezoekaanvragen</header>
 
-<div class="main">
-  <div class="topbar">
-    <div id="welcome">Welkom!</div>
+  <div class="main">
+    <div class="topbar">
+      <div id="welcome">Welkom!</div>
 
-    <div class="topbar-actions">
-      <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
-      <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
-      <button id="logoutBtn" class="logout-btn">Logout</button>
+      <div class="topbar-actions">
+        <button id="adminBtn" class="primary-btn" style="display:none;">🛠️ Adminpaneel</button>
+        <button id="refreshBtn" class="secondary-btn">↻ Vernieuwen</button>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
 
-      <label for="filterPost" style="color:white;font-weight:600;">Filter per post:</label>
-      <select id="filterPost">
-        <option value="">Alle posten</option>
-      </select>
+        <label for="filterPost" style="color:white;font-weight:600;">Filter per post:</label>
+        <select id="filterPost">
+          <option value="">Alle posten</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="legend"></div>
+
+    <div class="calendar-wrap">
+      <div id="calendar"></div>
     </div>
   </div>
 
-  <div id="legend"></div>
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🚒 Details bezoek</h3>
+          <div class="modal-subtitle">Bekijk de planning en beheer je deelname</div>
+        </div>
+        <button class="close-x" id="closeModalBtn">Sluiten</button>
+      </div>
+      <div class="modal-body">
+        <div class="hero-strip">
+          <div class="hero-icon">🔥</div>
+          <div class="hero-text">
+            <strong id="heroTitle">Bezoek gepland</strong>
+            <span id="heroText">Open dit event om je beschikbaarheid te bekijken of te beheren.</span>
+          </div>
+        </div>
 
-  <div class="calendar-wrap">
-    <div id="calendar"></div>
+        <div id="eventDetails" class="info-grid"></div>
+        <div id="bezettingBox" class="status-box"></div>
+        <div id="crewBox" class="crew-box"></div>
+        <div id="userStateBox" class="user-state"></div>
+
+        <div class="modal-actions" id="userActions">
+          <button class="btn-signup" id="signupBtn">✅ Ik stel me beschikbaar</button>
+          <button class="btn-leave" id="leaveBtn">➖ Uitschrijven</button>
+          <button class="btn-replace" id="replaceBtn">🔄 Vervanger zoeken</button>
+        </div>
+
+        <div id="adminActions" class="admin-actions" style="display:none;">
+          <div class="admin-actions-title">Admin acties</div>
+          <div class="modal-actions">
+            <button class="btn-approve" id="approveBtn">Aanvraag goedkeuren</button>
+            <button class="btn-reject" id="rejectBtn">Aanvraag weigeren</button>
+          </div>
+          <div class="small-note">Deze knoppen zijn enkel zichtbaar voor admins.</div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- Event Modal -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Details bezoek</h3>
-      <button class="close-x" id="closeModalBtn">X</button>
-    </div>
-    <div class="modal-body">
-      <div id="eventDetails" class="info-grid"></div>
-      <div id="bezettingBox" class="status-box"></div>
-      <div id="userStateBox" class="user-state"></div>
-      <div class="modal-actions" id="userActions"></div>
-    </div>
-  </div>
-</div>
+  <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- Popup Notificatie -->
-<div id="popupNotification" class="popup-notification">
-  <div class="popup-content">
-    <div class="popup-header">
-      <h3>🔔 Vervanger gezocht!</h3>
-      <button class="close-x" id="closePopupBtn">X</button>
-    </div>
-    <div class="popup-body" id="popupMessage">
-      Er wordt een vervanger gezocht voor een event!
-    </div>
-  </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
+  <script>
+    const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-const SUPABASE_URL = "https://elmkjlqcsshctmnbqbfq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_yROKuvppBKGe-bdXd_6hzQ_w2V2v77i";
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+    let currentProfile = null;
+    let selectedEvent = null;
+    let calendar = null;
+    let realtimeChannels = [];
+    let posten = [];
+    let selectedEventCrew = [];
 
-let currentUser = null;
-let currentProfile = null;
-let selectedEvent = null;
-let calendar = null;
-let realtimeChannels = [];
-let posten = [];
-
-document.addEventListener("DOMContentLoaded", async () => {
-  bindButtons();
-  startCalendar();
-  await initPage();
-});
-
-function bindButtons() {
-  document.getElementById("logoutBtn").addEventListener("click", logout);
-  document.getElementById("refreshBtn").addEventListener("click", refreshAll);
-  document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-  document.getElementById("closePopupBtn").addEventListener("click", () => {
-    document.getElementById("popupNotification").style.display = "none";
-  });
-
-  document.getElementById("filterPost").addEventListener("change", async () => {
-    await loadEvents(document.getElementById("filterPost").value);
-  });
-
-  window.addEventListener("click", (e) => {
-    if (e.target === document.getElementById("modal")) closeModal();
-  });
-}
-
-async function initPage() {
-  const { data: authData } = await client.auth.getUser();
-  if (!authData?.user) { window.location.href = "login.html"; return; }
-  currentUser = authData.user;
-
-  const { data: profile } = await client.from("profiles").select("*").eq("user_id", currentUser.id).maybeSingle();
-  currentProfile = profile;
-
-  document.getElementById("welcome").textContent = `Welkom, ${profile.name || profile.email}!`;
-  if (profile?.is_admin) document.getElementById("adminBtn").style.display = "inline-block";
-
-  await laadPosten();
-  bouwLegend();
-  vulPostFilter();
-  await refreshAll();
-  startRealtime();
-}
-
-async function laadPosten() {
-  const { data, error } = await client.from("posten").select("*").order("id", {ascending:true});
-  posten = data || [
-    { id:1, naam:"Post Balen", kleur:"#e6194b", icoon:"🚒" },
-    { id:2, naam:"Post Geel", kleur:"#3cb44b", icoon:"🧯" }
-  ];
-}
-
-function bouwLegend() {
-  const legend = document.getElementById("legend");
-  legend.innerHTML = "";
-  posten.forEach(post => {
-    const div = document.createElement("div");
-    div.className = "legend-item";
-    div.innerHTML = `<span class="legend-color" style="background:${post.kleur}"></span>${post.icoon} ${post.naam}`;
-    legend.appendChild(div);
-  });
-}
-
-function vulPostFilter() {
-  const filterSelect = document.getElementById("filterPost");
-  filterSelect.innerHTML = `<option value="">Alle posten</option>`;
-  posten.forEach(post => {
-    const opt = document.createElement("option");
-    opt.value = String(post.id);
-    opt.textContent = `${post.icoon} ${post.naam}`;
-    filterSelect.appendChild(opt);
-  });
-}
-
-function startCalendar() {
-  const calendarEl = document.getElementById("calendar");
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    locale: "nl",
-    height: 650,
-    headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,listMonth" },
-    eventClick: (info) => openEventModal(info.event)
-  });
-  calendar.render();
-}
-
-async function refreshAll() {
-  await loadEvents(document.getElementById("filterPost").value);
-}
-
-async function loadEvents(postFilter="") {
-  let query = client.from("aanvragen").select(`
-    *,
-    posten:post_id(id, naam, kleur, icoon)
-  `).eq("status","Goedgekeurd").order("datum_tijd",{ascending:true});
-
-  if(postFilter) query = query.eq("post_id",Number(postFilter));
-
-  const { data, error } = await query;
-  calendar.removeAllEvents();
-  data.forEach(item => {
-    const post = item.posten || posten.find(p => p.id === item.post_id);
-    const startDatum = item.datum_tijd;
-    calendar.addEvent({
-      id:String(item.id),
-      title: `${post?.icoon || "🔥"} ${item.school}`,
-      start:startDatum,
-      color: post?.kleur || "#ff6a00",
-      extendedProps: {...item, postNaam:post?.naam, postIcoon:post?.icoon}
+    document.addEventListener("DOMContentLoaded", async () => {
+      bindButtons();
+      startCalendar();
+      await initPage();
     });
-  });
-}
 
-async function openEventModal(event) {
-  selectedEvent = event;
-  const props = event.extendedProps;
+    function bindButtons() {
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+      document.getElementById("refreshBtn").addEventListener("click", refreshAll);
+      document.getElementById("closeModalBtn").addEventListener("click", closeModal);
 
-  document.getElementById("eventDetails").innerHTML = `
-    <div class="info-item"><strong>School</strong>${props.school}</div>
-    <div class="info-item"><strong>Post</strong>${props.postIcoon} ${props.postNaam}</div>
-    <div class="info-item"><strong>Datum</strong>${new Date(event.start).toLocaleString("nl-BE")}</div>
-    <div class="info-item"><strong>Status</strong>${props.status}</div>
-  `;
+      document.getElementById("signupBtn").addEventListener("click", schrijfInVoorEvent);
+      document.getElementById("leaveBtn").addEventListener("click", schrijfUitVoorEvent);
+      document.getElementById("replaceBtn").addEventListener("click", zoekVervangerVoorEvent);
 
-  // Beschikbaarheid ophalen
-  const { data: aanwezigen } = await client.from("beschikbaarheid")
-    .select("*")
-    .eq("aanvraag_id", props.id);
+      document.getElementById("approveBtn").addEventListener("click", () => updateStatusAanvraag("Goedgekeurd"));
+      document.getElementById("rejectBtn").addEventListener("click", () => updateStatusAanvraag("Geweigerd"));
 
-  const isIngeschreven = aanwezigen.some(u => u.user_id === currentUser.id);
-  const maxBereikt = aanwezigen.length >= 2;
-  let actiesHTML = "";
+      document.getElementById("adminBtn").addEventListener("click", () => {
+        window.location.href = "admin.html";
+      });
 
-  if (!isIngeschreven && !maxBereikt) {
-    actiesHTML += `<button class="btn-approve" id="inschrijvenBtn">Inschrijven</button>`;
-  }
-  if (isIngeschreven) {
-    actiesHTML += `<button class="btn-reject" id="vervangerBtn">Vervanger zoeken</button>`;
-  }
+      document.getElementById("filterPost").addEventListener("change", async () => {
+        await loadEvents(document.getElementById("filterPost").value);
+      });
 
-  document.getElementById("userActions").innerHTML = actiesHTML;
-  document.getElementById("modal").style.display = "block";
+      window.addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modal")) closeModal();
+      });
+    }
 
-  if (document.getElementById("inschrijvenBtn")) {
-    document.getElementById("inschrijvenBtn").addEventListener("click", async () => {
-      await client.from("beschikbaarheid").insert([{
-        user_email: currentUser.email,
-        user_id: currentUser.id,
-        name: currentProfile.name,
-        aanvraag_id: props.id,
-        aanwezig:true
-      }]);
+    async function initPage() {
+      const { data: authData, error: authError } = await client.auth.getUser();
+
+      if (authError || !authData?.user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      currentUser = authData.user;
+
+      const { data: profile, error: profileError } = await client
+        .from("profiles")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (profileError || !profile) {
+        toonToast("Accountprobleem", "Profiel niet gevonden. Log opnieuw in.", "error");
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1500);
+        return;
+      }
+
+      currentProfile = profile;
+
+      document.getElementById("welcome").textContent =
+        `Welkom, ${profile.name || profile.user_name || profile.email || "gebruiker"}!`;
+
+      if (profile.is_admin) {
+        document.getElementById("adminBtn").style.display = "inline-block";
+        document.getElementById("adminActions").style.display = "block";
+      }
+
+      await laadPosten();
+      bouwLegend();
+      vulPostFilter();
+      await refreshAll();
+      startRealtime();
+    }
+
+    async function laadPosten() {
+      const { data, error } = await client
+        .from("posten")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error("Fout bij laden posten:", error);
+        posten = [
+          { id: 1, naam: "Post Balen", kleur: "#e6194b", icoon: "🚒" },
+          { id: 2, naam: "Post Geel", kleur: "#3cb44b", icoon: "🧯" },
+          { id: 3, naam: "Post Grobbendonk", kleur: "#ffe119", icoon: "🔥" },
+          { id: 4, naam: "Post Herentals", kleur: "#4363d8", icoon: "🚨" },
+          { id: 5, naam: "Post Herenthout", kleur: "#f58231", icoon: "🏫" },
+          { id: 6, naam: "Post Mol", kleur: "#911eb4", icoon: "📟" },
+          { id: 7, naam: "Post Westerlo", kleur: "#46f0f0", icoon: "📞" }
+        ];
+        return;
+      }
+
+      posten = data || [];
+    }
+
+    function bouwLegend() {
+      const legend = document.getElementById("legend");
+      legend.innerHTML = "";
+
+      posten.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "legend-item";
+        div.innerHTML = `
+          <span class="legend-color" style="background:${post.kleur || "#999"}"></span>
+          ${post.icoon || "📍"} ${post.naam || "Onbekende post"}
+        `;
+        legend.appendChild(div);
+      });
+    }
+
+    function vulPostFilter() {
+      const filterSelect = document.getElementById("filterPost");
+      const huidigeWaarde = filterSelect.value;
+
+      filterSelect.innerHTML = `<option value="">Alle posten</option>`;
+
+      posten.forEach(post => {
+        const opt = document.createElement("option");
+        opt.value = String(post.id);
+        opt.textContent = `${post.icoon || "📍"} ${post.naam}`;
+        filterSelect.appendChild(opt);
+      });
+
+      filterSelect.value = huidigeWaarde || "";
+    }
+
+    function startCalendar() {
+      const calendarEl = document.getElementById("calendar");
+
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "nl",
+        height: 650,
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,listMonth"
+        },
+        buttonText: {
+          today: "Vandaag",
+          month: "Maand",
+          week: "Week",
+          list: "Lijst"
+        },
+        eventClick: function(info) {
+          openEventModal(info.event);
+        }
+      });
+
+      calendar.render();
+    }
+
+    async function refreshAll() {
+      const selectedPostId = document.getElementById("filterPost").value;
+      await loadEvents(selectedPostId);
+    }
+
+    async function loadEvents(postFilter = "") {
+      let query = client
+        .from("aanvragen")
+        .select(`
+          *,
+          posten:post_id (
+            id,
+            naam,
+            kleur,
+            icoon
+          )
+        `)
+        .eq("status", "Goedgekeurd")
+        .order("datum_tijd", { ascending: true });
+
+      if (postFilter) {
+        query = query.eq("post_id", Number(postFilter));
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Fout bij laden aanvragen:", error);
+        toonToast("Fout", "De bezoeken konden niet geladen worden.", "error");
+        return;
+      }
+
+      calendar.removeAllEvents();
+
+      if (!data || data.length === 0) return;
+
+      for (const item of data) {
+        const post = item.posten || posten.find(p => p.id === item.post_id) || null;
+        const startDatum = item.datum_tijd || parseDatumString(item.datum);
+        if (!startDatum) continue;
+
+        const { data: crew } = await client
+          .from("beschikbaarheid")
+          .select("id, user_id, user_email, user_name, name, aanwezig, ruil_gevraagd, aanvraag_id")
+          .eq("aanvraag_id", item.id)
+          .eq("aanwezig", true);
+
+        const actieveCrew = (crew || []).filter(row => row.ruil_gevraagd !== true);
+        const crewCount = actieveCrew.length;
+
+        let eventTitle = `${post?.icoon || "🔥"} ${item.school || "Bezoek"}`;
+        if (crewCount > 0) {
+          eventTitle += ` (${crewCount}/2)`;
+        }
+
+        calendar.addEvent({
+          id: String(item.id),
+          title: eventTitle,
+          start: startDatum,
+          color: post?.kleur || "#ff6a00",
+          extendedProps: {
+            ...item,
+            postNaam: post?.naam || "Onbekende post",
+            postKleur: post?.kleur || "#ff6a00",
+            postIcoon: post?.icoon || "🔥",
+            crewCount
+          }
+        });
+      }
+    }
+
+    function parseDatumString(datumString) {
+      if (!datumString) return null;
+      if (datumString.includes("T")) return datumString;
+
+      const match = datumString.match(/^(\d{4}-\d{2}-\d{2})[ ](\d{2}:\d{2})(:\d{2})?$/);
+      if (match) {
+        return `${match[1]}T${match[2]}:00`;
+      }
+      return null;
+    }
+
+    function formatDateTime(date) {
+      if (!date) return "-";
+      return new Date(date).toLocaleString("nl-BE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    async function openEventModal(event) {
+      selectedEvent = event;
+      const props = event.extendedProps || {};
+
+      const { data: crewData, error } = await client
+        .from("beschikbaarheid")
+        .select("id, user_id, user_email, user_name, name, aanwezig, ruil_gevraagd, aanvraag_id")
+        .eq("aanvraag_id", Number(event.id))
+        .eq("aanwezig", true);
+
+      if (error) {
+        console.error("Fout bij laden bemanning:", error);
+        selectedEventCrew = [];
+      } else {
+        selectedEventCrew = (crewData || []).filter(row => row.ruil_gevraagd !== true);
+      }
+
+      const mijnNaam =
+        currentProfile?.name ||
+        currentProfile?.user_name ||
+        currentProfile?.email ||
+        currentUser?.email ||
+        "Gebruiker";
+
+      const mijnInschrijving = selectedEventCrew.find(row =>
+        String(row.user_id) === String(currentProfile.user_id) ||
+        String(row.user_email).toLowerCase() === String(currentProfile.email).toLowerCase()
+      );
+
+      const isVol = selectedEventCrew.length >= 2;
+      const vrijePlaatsen = Math.max(0, 2 - selectedEventCrew.length);
+
+      document.getElementById("heroTitle").textContent = props.school || "Bezoek";
+      document.getElementById("heroText").textContent =
+        `Post ${props.postNaam || "-"} • ${formatDateTime(event.start)} • ${selectedEventCrew.length}/2 deelnemers`;
+
+      document.getElementById("eventDetails").innerHTML = `
+        <div class="info-item"><strong>School</strong>${props.school || "-"}</div>
+        <div class="info-item"><strong>Post</strong>${props.postIcoon || ""} ${props.postNaam || "-"}</div>
+        <div class="info-item"><strong>Datum & uur</strong>${formatDateTime(event.start)}</div>
+        <div class="info-item"><strong>Status</strong>${props.status || "-"}</div>
+      `;
+
+      document.getElementById("bezettingBox").innerHTML = `
+        <strong>Bezetting van dit event</strong><br>
+        Momenteel zijn er <strong>${selectedEventCrew.length} van de 2</strong> plaatsen ingevuld.
+        ${vrijePlaatsen > 0 ? `Er ${vrijePlaatsen === 1 ? "is" : "zijn"} nog <strong>${vrijePlaatsen}</strong> vrije ${vrijePlaatsen === 1 ? "plaats" : "plaatsen"}.` : `Dit event zit momenteel <strong>vol</strong>.`}
+      `;
+
+      const crewHtml = selectedEventCrew.length
+        ? selectedEventCrew.map(persoon => {
+            const naam = persoon.user_name || persoon.name || persoon.user_email || "Onbekend";
+            return `<div class="crew-pill">👨‍🚒 ${naam}</div>`;
+          }).join("")
+        : `<div class="crew-pill empty">Nog niemand ingeschreven</div>`;
+
+      document.getElementById("crewBox").innerHTML = `
+        <strong>Ingeschreven brandweerlieden</strong>
+        <div class="crew-list">${crewHtml}</div>
+      `;
+
+      if (mijnInschrijving) {
+        document.getElementById("userStateBox").innerHTML = `
+          <strong>Jouw status</strong><br>
+          Jij staat momenteel <strong>ingeschreven</strong> voor dit event als <strong>${mijnNaam}</strong>.
+          Je kunt jezelf uitschrijven of meteen een vervanger laten zoeken.
+        `;
+      } else if (isVol) {
+        document.getElementById("userStateBox").innerHTML = `
+          <strong>Jouw status</strong><br>
+          Dit event zit al vol. Je kunt jezelf nu niet meer toevoegen zolang er geen plaats vrijkomt.
+        `;
+      } else {
+        document.getElementById("userStateBox").innerHTML = `
+          <strong>Jouw status</strong><br>
+          Jij bent nog niet ingeschreven voor dit event. Je kunt jezelf nu beschikbaar zetten.
+        `;
+      }
+
+      document.getElementById("signupBtn").style.display = (!mijnInschrijving && !isVol) ? "inline-block" : "none";
+      document.getElementById("leaveBtn").style.display = mijnInschrijving ? "inline-block" : "none";
+      document.getElementById("replaceBtn").style.display = mijnInschrijving ? "inline-block" : "none";
+
+      if (currentProfile?.is_admin) {
+        document.getElementById("adminActions").style.display = "block";
+      } else {
+        document.getElementById("adminActions").style.display = "none";
+      }
+
+      document.getElementById("modal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      selectedEvent = null;
+      selectedEventCrew = [];
+    }
+
+    async function schrijfInVoorEvent() {
+      if (!selectedEvent || !currentProfile) return;
+
+      const aanvraagId = Number(selectedEvent.id);
+
+      const { data: bestaandeRows, error: bestaandeError } = await client
+        .from("beschikbaarheid")
+        .select("id, user_id, user_email, aanwezig, ruil_gevraagd")
+        .eq("aanvraag_id", aanvraagId)
+        .eq("aanwezig", true);
+
+      if (bestaandeError) {
+        toonToast("Fout", "Kon de huidige bezetting niet controleren.", "error");
+        return;
+      }
+
+      const actieveRows = (bestaandeRows || []).filter(r => r.ruil_gevraagd !== true);
+
+      const benIkAlIngeschreven = actieveRows.some(r =>
+        String(r.user_id) === String(currentProfile.user_id) ||
+        String(r.user_email).toLowerCase() === String(currentProfile.email).toLowerCase()
+      );
+
+      if (benIkAlIngeschreven) {
+        toonToast("Al ingeschreven", "Je staat al op dit event.", "info");
+        await openEventModal(selectedEvent);
+        return;
+      }
+
+      if (actieveRows.length >= 2) {
+        toonToast("Event is vol", "Er kunnen maximum 2 gebruikers op dit event staan.", "error");
+        await openEventModal(selectedEvent);
+        return;
+      }
+
+      const naam =
+        currentProfile.name ||
+        currentProfile.user_name ||
+        currentProfile.email ||
+        currentUser.email;
+
+      const postNaam = selectedEvent.extendedProps?.postNaam || "";
+
+      const { error } = await client
+        .from("beschikbaarheid")
+        .insert([{
+          user_email: currentProfile.email,
+          datum: selectedEvent.startStr,
+          post: postNaam,
+          name: naam,
+          user_id: currentProfile.user_id,
+          aanvraag_id: aanvraagId,
+          user_name: naam,
+          aanwezig: true,
+          ruil_gevraagd: false
+        }]);
+
+      if (error) {
+        toonToast("Opslaan mislukt", error.message, "error");
+        return;
+      }
+
+      toonToast("Top!", "Je bent succesvol ingeschreven voor dit event.", "success");
+      await loadEvents(document.getElementById("filterPost").value);
+      await openEventModal(selectedEvent);
+    }
+
+    async function schrijfUitVoorEvent() {
+      if (!selectedEvent || !currentProfile) return;
+
+      const aanvraagId = Number(selectedEvent.id);
+
+      const { error } = await client
+        .from("beschikbaarheid")
+        .delete()
+        .eq("aanvraag_id", aanvraagId)
+        .eq("user_email", currentProfile.email);
+
+      if (error) {
+        toonToast("Fout", "Uitschrijven is niet gelukt.", "error");
+        return;
+      }
+
+      toonToast("Uitgeschreven", "Je bent verwijderd van dit event.", "info");
+      await loadEvents(document.getElementById("filterPost").value);
+      await openEventModal(selectedEvent);
+    }
+
+    async function zoekVervangerVoorEvent() {
+      if (!selectedEvent || !currentProfile) return;
+
+      const aanvraagId = Number(selectedEvent.id);
+      const props = selectedEvent.extendedProps || {};
+      const naam =
+        currentProfile.name ||
+        currentProfile.user_name ||
+        currentProfile.email ||
+        currentUser.email;
+
+      const { error: deleteError } = await client
+        .from("beschikbaarheid")
+        .delete()
+        .eq("aanvraag_id", aanvraagId)
+        .eq("user_email", currentProfile.email);
+
+      if (deleteError) {
+        toonToast("Fout", "Je kon niet uit het event gehaald worden.", "error");
+        return;
+      }
+
+      const meldingTekst =
+        `🚨 Vervanger gezocht voor ${props.school || "een bezoek"} op ${formatDateTime(selectedEvent.start)} (${props.postNaam || "onbekende post"}).`;
+
+      const { error: meldingError } = await client
+        .from("meldingen")
+        .insert([{
+          titel: "Vervanger gezocht",
+          bericht: meldingTekst,
+          type: "vervanger",
+          aanvraag_id: aanvraagId,
+          aangemaakt_door: naam
+        }]);
+
+      if (meldingError) {
+        console.error("Melding kon niet opgeslagen worden:", meldingError);
+      }
+
+      toonToast(
+        "Vervanger gezocht",
+        `Je bent uit dit event gehaald. Alle gebruikers kunnen nu zien dat er een vervanger gezocht wordt voor ${props.school || "dit bezoek"}.`,
+        "success"
+      );
+
+      await loadEvents(document.getElementById("filterPost").value);
       closeModal();
-      await loadEvents();
-    });
-  }
+    }
 
-  if (document.getElementById("vervangerBtn")) {
-    document.getElementById("vervangerBtn").addEventListener("click", async () => {
-      // verwijder gebruiker
-      await client.from("beschikbaarheid").update({ aanwezig:false, ruil_gevraagd:true })
-        .eq("aanvraag_id", props.id)
-        .eq("user_id", currentUser.id);
+    async function updateStatusAanvraag(status) {
+      if (!currentProfile?.is_admin || !selectedEvent) return;
 
-      // popup naar alle gebruikers
-      document.getElementById("popupMessage").textContent = `🔔 ${currentProfile.name} zoekt een vervanger voor ${props.school}!`;
-      document.getElementById("popupNotification").style.display = "block";
+      const { error } = await client
+        .from("aanvragen")
+        .update({ status })
+        .eq("id", selectedEvent.id);
 
+      if (error) {
+        toonToast("Fout", "Status aanpassen is mislukt.", "error");
+        return;
+      }
+
+      toonToast("Status aangepast", `De aanvraag staat nu op "${status}".`, "success");
       closeModal();
-      await loadEvents();
-    });
-  }
-}
+      await loadEvents(document.getElementById("filterPost").value);
+    }
 
-function closeModal() { document.getElementById("modal").style.display="none"; }
-async function logout() { await client.auth.signOut(); window.location.href="login.html"; }
+    function startRealtime() {
+      realtimeChannels.forEach(ch => client.removeChannel(ch));
+      realtimeChannels = [];
 
-function startRealtime() {
-  const ch = client.channel("beschikbaarheid-events")
-    .on("postgres_changes", { event:"*", schema:"public", table:"beschikbaarheid" }, refreshAll)
-    .subscribe();
-  realtimeChannels.push(ch);
-}
-</script>
+      const ch1 = client
+        .channel("dashboard-aanvragen")
+        .on("postgres_changes", { event: "*", schema: "public", table: "aanvragen" }, async () => {
+          await loadEvents(document.getElementById("filterPost").value);
+        })
+        .subscribe();
 
+      const ch2 = client
+        .channel("dashboard-beschikbaarheid")
+        .on("postgres_changes", { event: "*", schema: "public", table: "beschikbaarheid" }, async () => {
+          await loadEvents(document.getElementById("filterPost").value);
+          if (selectedEvent) {
+            const refreshed = calendar.getEventById(String(selectedEvent.id));
+            if (refreshed) await openEventModal(refreshed);
+          }
+        })
+        .subscribe();
+
+      const ch3 = client
+        .channel("dashboard-meldingen")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "meldingen" }, (payload) => {
+          const item = payload.new || {};
+          if (item.type === "vervanger") {
+            toonToast("Nieuwe oproep", item.bericht || "Er wordt een vervanger gezocht.", "info");
+          }
+        })
+        .subscribe();
+
+      realtimeChannels.push(ch1, ch2, ch3);
+    }
+
+    function toonToast(titel, bericht, type = "info") {
+      const wrap = document.getElementById("toastWrap");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <div class="toast-title">${titel}</div>
+        <div class="toast-message">${bericht}</div>
+      `;
+      wrap.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        toast.style.transition = "all 0.25s ease";
+        setTimeout(() => toast.remove(), 250);
+      }, 4200);
+    }
+
+    async function logout() {
+      await client.auth.signOut();
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
