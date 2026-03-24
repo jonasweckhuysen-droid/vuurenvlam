@@ -179,6 +179,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const slotInfo = document.getElementById("slotInfo");
   const form = document.getElementById("aanvraagForm");
 
+  function normaliseerTijd(tijd) {
+    if (!tijd) return "";
+    return String(tijd).trim().substring(0, 5);
+  }
+
+  function normaliseerDatum(datum) {
+    if (!datum) return "";
+    return String(datum).trim().substring(0, 10);
+  }
+
+  function isSlotBezet(status) {
+    const s = String(status || "").toLowerCase().trim();
+    return s !== "afgekeurd" && s !== "geweigerd";
+  }
+
   async function laadPosten() {
     const { data, error } = await supabase
       .from("posten")
@@ -237,22 +252,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const vrijeSlots = (datums || []).filter(item => {
-      const isBezet = (bezetData || []).some(b => {
-        const zelfdePost = String(b.post_id) === String(item.post_id);
-        const zelfdeDatum = String(b.datum) === String(item.datum);
-        const zelfdeTijd = String(b.tijd) === String(item.tijd);
-        const status = String(b.status || "").toLowerCase().trim();
+      const itemDatum = normaliseerDatum(item.datum);
+      const itemTijd = normaliseerTijd(item.tijd);
 
-        return (
-          zelfdePost &&
-          zelfdeDatum &&
-          zelfdeTijd &&
-          status !== "afgekeurd" &&
-          status !== "geweigerd"
-        );
+      const isBezetDoorAanvraag = (bezetData || []).some(b => {
+        const zelfdePost = String(b.post_id) === String(item.post_id);
+        const zelfdeDatum = normaliseerDatum(b.datum) === itemDatum;
+        const zelfdeTijd = normaliseerTijd(b.tijd) === itemTijd;
+
+        return zelfdePost && zelfdeDatum && zelfdeTijd && isSlotBezet(b.status);
       });
 
-      return !isBezet;
+      return !isBezetDoorAanvraag;
     });
 
     if (vrijeSlots.length === 0) {
@@ -262,10 +273,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     vrijeSlots.forEach(item => {
-      const key = `${item.datum}|${item.tijd}`;
+      const datum = normaliseerDatum(item.datum);
+      const tijd = normaliseerTijd(item.tijd);
+      const key = `${datum}|${tijd}`;
+
       const option = document.createElement("option");
       option.value = key;
-      option.textContent = `🔥 ${item.datum} om ${item.tijd}`;
+      option.textContent = `🔥 ${datum} om ${tijd}`;
       datumSelect.appendChild(option);
     });
 
@@ -287,7 +301,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const [datum, tijd] = datumSelect.value.split("|");
+    const [datumRaw, tijdRaw] = datumSelect.value.split("|");
+    const datum = normaliseerDatum(datumRaw);
+    const tijd = normaliseerTijd(tijdRaw);
     const postId = parseInt(postSelect.value, 10);
     const datum_tijd = `${datum}T${tijd}:00`;
 
@@ -306,10 +322,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const { data: bestaande, error: checkError } = await supabase
       .from("aanvragen")
-      .select("id, status")
-      .eq("post_id", postId)
-      .eq("datum", datum)
-      .eq("tijd", tijd);
+      .select("id, datum, tijd, status")
+      .eq("post_id", postId);
 
     if (checkError) {
       console.error("Fout bij controle bestaande aanvraag:", checkError);
@@ -318,8 +332,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const effectiefBezet = (bestaande || []).some(item => {
-      const status = String(item.status || "").toLowerCase().trim();
-      return status !== "afgekeurd" && status !== "geweigerd";
+      return (
+        normaliseerDatum(item.datum) === datum &&
+        normaliseerTijd(item.tijd) === tijd &&
+        isSlotBezet(item.status)
+      );
     });
 
     if (effectiefBezet) {
