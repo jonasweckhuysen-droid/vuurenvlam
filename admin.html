@@ -6,20 +6,31 @@
 <title>Adminpaneel – Beheer</title>
 
 <style>
-/* --- Styles hetzelfde als jouw huidige code --- */
 * { box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(160deg,#ff6a00,#ffb347); margin:0; padding:0; min-height:100vh; }
-.topbar { background: #c71f1f; color: white; padding: 16px 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-.topbar-title { font-size: 24px; font-weight:700; }
-.topbar-actions { display:flex; gap:10px; flex-wrap:wrap; }
-.container { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding:20px; border-radius:24px; max-width:1200px; width:calc(100%-24px); margin:18px auto; box-shadow:0 10px 25px rgba(0,0,0,0.2); color:white; }
-.admin-info-box { background: rgba(255,255,255,0.18); border-radius:18px; padding:14px 16px; margin-bottom:18px; font-size:16px; }
-.page-actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
-.section-card { background: rgba(255,255,255,0.14); border-radius:22px; padding:18px; margin-top:18px; }
-.section-header { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
-h2,h3 { margin:0; }
-h3 { font-size:20px; }
-.section-sub { font-size:13px; color:rgba(255,255,255,0.9); margin-top:6px; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(160deg,#ff6a00,#ffb347);
+  margin: 0; padding: 0; min-height: 100vh;
+  color: white;
+}
+.topbar {
+  background: #c71f1f; color: white; padding: 16px 18px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.topbar-title { font-size: 24px; font-weight: 700; }
+.topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.container {
+  background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+  padding: 20px; border-radius: 24px; max-width: 1200px; width: calc(100% - 24px);
+  margin: 18px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.section-card {
+  background: rgba(255,255,255,0.14); border-radius: 22px; padding: 18px; margin-top: 18px;
+}
+.section-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+h3 { margin:0; font-size:20px; }
+.section-sub { font-size:13px; color: rgba(255,255,255,0.9); margin-top:6px; }
 .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling: touch; border-radius:16px; }
 table { width:100%; border-collapse:collapse; background:white; color:black; border-radius:16px; overflow:hidden; min-width:760px; }
 th, td { padding:12px; border-bottom:1px solid #e5e5e5; font-size:14px; text-align:left; vertical-align:top; }
@@ -44,8 +55,8 @@ button:hover { transform:scale(1.03); }
 .badge-admin { background:#e5e7ff; color:#2f49c7; }
 .badge-status { background:#fff2e2; color:#b55b00; }
 .empty-message { background:white; color:#555; border-radius:14px; padding:14px; font-size:14px; }
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; padding:16px; overflow-y:auto; }
-.modal-content { background:white; padding:20px; border-radius:18px; max-width:420px; margin:50px auto; color:black; box-shadow:0 15px 35px rgba(0,0,0,0.25); }
+.modal { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.6); z-index:1000; padding:16px; overflow-y:auto; }
+.modal-content { background:white; padding:20px; border-radius:18px; max-width:420px; margin:50px auto; color:black; box-shadow:0 15px 35px rgba(0,0,0,0.25);}
 .modal-header { display:flex; justify-content:space-between; align-items:center; gap:10px; }
 .modal-header h3 { margin:0; font-size:20px; }
 .modal-body { margin-top:14px; }
@@ -53,11 +64,15 @@ button:hover { transform:scale(1.03); }
 .modal-body input, .modal-body select { width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; font-size:14px; }
 .modal-actions { margin-top:16px; display:flex; flex-wrap:wrap; gap:10px; }
 .btn-close { background:#555; color:white; }
-.small-note { font-size:12px; color:rgba(255,255,255,0.9); margin-top:8px; }
-@media (max-width:768px){.topbar-title{font-size:20px;}.container{padding:14px;width:calc(100%-16px);margin:12px auto;border-radius:18px;}.section-card{padding:14px;border-radius:18px;}h3{font-size:18px;}button{width:100%;}.topbar-actions,.page-actions,.modal-actions,.btn-group{flex-direction:column;}.actions-cell{min-width:180px;}table{min-width:760px;}.modal-content{margin:20px auto;width:100%;}}
+.small-note { font-size:12px; color: rgba(255,255,255,0.9); margin-top:8px; }
+@media (max-width:768px) {
+  .topbar-title{font-size:20px;} .container{padding:14px; width:calc(100%-16px); margin:12px auto; border-radius:18px;} 
+  .section-card{padding:14px; border-radius:18px;} h3{font-size:18px;} button{width:100%;} 
+  .topbar-actions, .btn-group, .modal-actions{flex-direction:column;} .actions-cell{min-width:180px;} table{min-width:760px;}
+  .modal-content{margin:20px auto; width:100%;}
+}
 </style>
 </head>
-
 <body>
 
 <div class="topbar">
@@ -70,40 +85,72 @@ button:hover { transform:scale(1.03); }
 </div>
 
 <div class="container">
-  <div class="admin-info-box">
-    <div id="adminInfo">Admin laden...</div>
-    <div class="small-note">Beheer hier gebruikers, aanvragen, beschikbaarheden en logs.</div>
+
+  <div class="section-card">
+    <div class="section-header"><h3>👥 Gebruikersbeheer</h3></div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Email</th><th>Naam</th><th>Goedgekeurd</th><th>Admin</th><th>Acties</th></tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="page-actions">
+  <div class="section-card">
+    <div class="section-header"><h3>🏫 Bezoekaanvragen beheren</h3></div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>School</th><th>Datum</th><th>Post</th><th>Status</th><th>Acties</th></tr>
+        </thead>
+        <tbody id="aanvraagTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header"><h3>📅 Beschikbare datums</h3></div>
     <button class="btn-add" onclick="openDatumModal()">📅 Nieuwe datum toevoegen</button>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Post</th><th>Datum</th><th>Tijd</th><th>Acties</th></tr>
+        </thead>
+        <tbody id="beschikbareTable"></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- --- Tabellen zoals in jouw originele code blijven hetzelfde --- -->
+  <div class="section-card">
+    <div class="section-header"><h3>📜 Logs</h3></div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Tijd</th><th>Gebruiker</th><th>Actie</th></tr>
+        </thead>
+        <tbody id="logTable"></tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
 
-<!-- --- Modal voor datum toevoegen per post --- -->
 <div id="datumModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <h3>📅 Datum toevoegen</h3>
       <button class="btn-close" onclick="closeDatumModal()">X</button>
     </div>
-
     <div class="modal-body">
-      <label for="datumPostSelect">🚒 Kies een post</label>
-      <select id="datumPostSelect">
-        <option value="">-- Kies een post --</option>
-      </select>
-
-      <label for="nieuweDatum">Datum</label>
-      <input type="date" id="nieuweDatum">
-
-      <label for="nieuweTijd">Tijdstip</label>
-      <input type="time" id="nieuweTijd">
+      <label>Brandweerpost</label>
+      <select id="modalPostSelect"><option value="">-- Kies een post --</option></select>
+      <label>Datum</label>
+      <input type="date" id="modalDatum">
+      <label>Tijd</label>
+      <input type="time" id="modalTijd">
     </div>
-
     <div class="modal-actions">
       <button class="btn-approve" onclick="opslaanDatum()">Opslaan</button>
       <button class="btn-close" onclick="closeDatumModal()">Annuleren</button>
@@ -112,7 +159,6 @@ button:hover { transform:scale(1.03); }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 const client = window.supabase.createClient(
   "https://elmkjlqcsshctmnbqbfq.supabase.co",
@@ -124,98 +170,124 @@ let realtimeChannels = [];
 let postenMap = {};
 
 window.onload = async () => {
-  const { data: { user }, error: authError } = await client.auth.getUser();
-
-  if (authError || !user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const { data: profile, error: profileError } = await client
-    .from("profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (profileError || !profile || !profile.is_admin) {
-    alert("Geen toegang tot adminpaneel.");
-    window.location.href = "dashboard.html";
-    return;
-  }
-
+  const { data: { user }, error } = await client.auth.getUser();
+  if (error || !user) { window.location.href="login.html"; return; }
+  const { data: profile } = await client.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
+  if (!profile || !profile.is_admin) { alert("Geen toegang"); window.location.href="dashboard.html"; return; }
   currentUser = profile;
-  document.getElementById("adminInfo").innerText =
-    `Ingelogd als admin: ${profile.name || profile.email}`;
-
   await laadPostenMap();
   await refreshAll();
   startRealtime();
-
-  // Laad posten in datum modal
-  const datumPostSelect = document.getElementById("datumPostSelect");
-  datumPostSelect.innerHTML = '<option value="">-- Kies een post --</option>';
-  Object.entries(postenMap).forEach(([id, naam]) => {
-    const option = document.createElement("option");
-    option.value = id;
-    option.textContent = naam;
-    datumPostSelect.appendChild(option);
-  });
 };
 
 async function laadPostenMap() {
-  const { data, error } = await client
-    .from("posten")
-    .select("id, naam")
-    .order("id", { ascending: true });
-
-  if (error) {
-    console.error("Fout bij laden posten:", error);
-    postenMap = {};
-    return;
-  }
-
+  const { data, error } = await client.from("posten").select("id, naam").order("id");
   postenMap = {};
-  (data || []).forEach(post => postenMap[post.id] = post.naam);
+  (data||[]).forEach(p => postenMap[p.id]=p.naam);
+  const modalSelect = document.getElementById("modalPostSelect");
+  modalSelect.innerHTML='<option value="">-- Kies een post --</option>';
+  (data||[]).forEach(p=>{const o=document.createElement("option"); o.value=p.id; o.textContent=p.naam; modalSelect.appendChild(o);});
 }
 
-async function opslaanDatum() {
-  const datum = document.getElementById("nieuweDatum").value;
-  const tijd = document.getElementById("nieuweTijd").value;
-  const postId = parseInt(document.getElementById("datumPostSelect").value, 10);
-
-  if (!datum || !tijd || !postId) {
-    alert("Vul datum, tijd en post in.");
-    return;
-  }
-
-  const datum_tijd = `${datum}T${tijd}:00`;
-
-  const { error } = await client
-    .from("beschikbare_datums")
-    .insert([{
-      datum: datum,
-      tijd: tijd,
-      datum_tijd: datum_tijd,
-      post_id: postId
-    }]);
-
-  if (error) {
-    alert("Fout bij opslaan: " + error.message);
-    console.error(error);
-    return;
-  }
-
-  alert("Datum toegevoegd voor post: " + postenMap[postId]);
-  document.getElementById("nieuweDatum").value = "";
-  document.getElementById("nieuweTijd").value = "";
-  document.getElementById("datumPostSelect").value = "";
-  closeDatumModal();
+function startRealtime() {
+  realtimeChannels.forEach(ch=>client.removeChannel(ch));
+  realtimeChannels = [];
+  const chA = client.channel("admin-aanvragen").on("postgres_changes",{event:"*",schema:"public",table:"aanvragen"},loadAanvragen).subscribe();
+  const chB = client.channel("admin-beschikbaarheid").on("postgres_changes",{event:"*",schema:"public",table:"beschikbare_datums"},loadBeschikbare).subscribe();
+  const chC = client.channel("admin-profiles").on("postgres_changes",{event:"*",schema:"public",table:"profiles"},loadUsers).subscribe();
+  const chD = client.channel("admin-logs").on("postgres_changes",{event:"*",schema:"public",table:"logs"},loadLogs).subscribe();
+  realtimeChannels.push(chA,chB,chC,chD);
 }
 
-function openDatumModal() { document.getElementById("datumModal").style.display = "block"; }
-function closeDatumModal() { document.getElementById("datumModal").style.display = "none"; }
-function goDashboard() { window.location.href = "dashboard.html"; }
-async function logout() { await client.auth.signOut(); window.location.href = "login.html"; }
+async function refreshAll(){await laadPostenMap(); await loadUsers(); await loadAanvragen(); await loadBeschikbare(); await loadLogs();}
+
+function badgeYesNo(v){return v?'<span class="badge badge-ok">Ja</span>':'<span class="badge badge-no">Nee</span>';}
+
+async function loadUsers(){
+  const { data } = await client.from("profiles").select("*").order("email");
+  const table=document.getElementById("userTable"); table.innerHTML="";
+  (data||[]).forEach(u=>{
+    const row=document.createElement("tr");
+    row.innerHTML=`<td>${u.email||"-"}</td><td>${u.name||"-"}</td><td>${badgeYesNo(u.approved)}</td><td>${u.is_admin?'<span class="badge badge-admin">Admin</span>':'<span class="badge badge-no">Nee</span>'}</td>
+    <td class="actions-cell"><div class="btn-group">
+      <button class="btn-approve" onclick="approveUser('${u.user_id}')">Goedkeuren</button>
+      <button class="btn-block" onclick="blockUser('${u.user_id}')">Blokkeren</button>
+      <button class="btn-admin" onclick="toggleAdmin('${u.user_id}',${u.is_admin})">Admin wisselen</button>
+      <button class="btn-reset" onclick="resetPassword('${u.email}')">Reset wachtwoord</button>
+      <button class="btn-delete" onclick="deleteUser('${u.user_id}')">Verwijderen</button>
+    </div></td>`;
+    table.appendChild(row);
+  });
+}
+
+async function approveUser(id){await client.from("profiles").update({approved:true}).eq("user_id",id); await loadUsers();}
+async function blockUser(id){await client.from("profiles").update({approved:false}).eq("user_id",id); await loadUsers();}
+async function toggleAdmin(id,isAdmin){await client.from("profiles").update({is_admin:!isAdmin}).eq("user_id",id); await loadUsers();}
+async function resetPassword(email){if(!email)return; await client.auth.resetPasswordForEmail(email); alert("Resetmail verzonden.");}
+async function deleteUser(id){if(!confirm("Weet je zeker dat je deze gebruiker wilt verwijderen?")) return; await client.from("profiles").delete().eq("user_id",id); await loadUsers();}
+
+async function loadAanvragen(){
+  const { data } = await client.from("aanvragen").select("*").order("id",{ascending:false});
+  const table=document.getElementById("aanvraagTable"); table.innerHTML="";
+  (data||[]).forEach(a=>{
+    const row=document.createElement("tr");
+    const postNaam=postenMap[a.post_id]||"Onbekende post";
+    row.innerHTML=`<td>${a.school||"-"}</td><td>${a.datum||"-"} ${a.tijd||""}</td><td>${postNaam}</td><td><span class="badge badge-status">${a.status||"-"}</span></td>
+    <td class="actions-cell"><div class="btn-group">
+      <button class="btn-approve" onclick="setStatus(${a.id},'Goedgekeurd')">Goedkeuren</button>
+      <button class="btn-block" onclick="setStatus(${a.id},'Afgekeurd')">Afkeuren</button>
+    </div></td>`;
+    table.appendChild(row);
+  });
+}
+
+async function setStatus(id,status){await client.from("aanvragen").update({status}).eq("id",id); await loadAanvragen();}
+
+async function loadBeschikbare(){
+  const { data } = await client.from("beschikbare_datums").select("*").order("datum",{ascending:true});
+  const table=document.getElementById("beschikbareTable"); table.innerHTML="";
+  (data||[]).forEach(d=>{
+    const row=document.createElement("tr");
+    row.innerHTML=`<td>${postenMap[d.post_id]||"Onbekende post"}</td><td>${d.datum}</td><td>${d.tijd}</td>
+    <td><div class="btn-group">
+      <button class="btn-delete" onclick="deleteDatum(${d.id})">Verwijderen</button>
+    </div></td>`;
+    table.appendChild(row);
+  });
+}
+
+async function deleteDatum(id){if(!confirm("Verwijderen?")) return; await client.from("beschikbare_datums").delete().eq("id",id); await loadBeschikbare();}
+
+async function loadLogs(){
+  const { data } = await client.from("logs").select("*").order("id",{ascending:false});
+  const table=document.getElementById("logTable"); table.innerHTML="";
+  (data||[]).forEach(l=>{
+    const row=document.createElement("tr");
+    row.innerHTML=`<td>${l.created_at||"-"}</td><td>${l.user||"-"}</td><td>${l.actie||"-"}</td>`;
+    table.appendChild(row);
+  });
+}
+
+// Modal datum toevoegen
+function openDatumModal(){document.getElementById("datumModal").style.display="block";}
+function closeDatumModal(){document.getElementById("datumModal").style.display="none";}
+
+async function opslaanDatum(){
+  const post_id=document.getElementById("modalPostSelect").value;
+  const datum=document.getElementById("modalDatum").value;
+  const tijd=document.getElementById("modalTijd").value;
+  if(!post_id||!datum||!tijd){alert("Alles invullen"); return;}
+  const datum_tijd=`${datum}T${tijd}:00`;
+  const { error } = await client.from("beschikbare_datums").insert([{post_id:parseInt(post_id),datum,tijd,datum_tijd}]);
+  if(error){alert("Fout: "+error.message); console.error(error); return;}
+  closeDatumModal(); await loadBeschikbare();
+}
+
+// Topbar functies
+function goDashboard(){window.location.href="dashboard.html";}
+async function logout(){await client.auth.signOut(); window.location.href="login.html";}
+
+window.addEventListener("click",function(e){if(e.target===document.getElementById("datumModal")) closeDatumModal();});
 </script>
 
 </body>
