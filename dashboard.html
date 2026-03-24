@@ -126,66 +126,6 @@
       min-height: 650px;
     }
 
-    .section {
-      margin-top: 24px;
-      background: rgba(255,255,255,0.16);
-      border-radius: 20px;
-      padding: 20px;
-    }
-
-    .section h3 {
-      margin-top: 0;
-      color: white;
-      font-size: 20px;
-    }
-
-    .section-note {
-      color: rgba(255,255,255,0.9);
-      font-size: 14px;
-      margin-top: -8px;
-      margin-bottom: 16px;
-    }
-
-    #beschikbaarheidContainer {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 10px;
-    }
-
-    .slot {
-      background: rgba(255,255,255,0.92);
-      border-radius: 14px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      min-height: 50px;
-    }
-
-    .slot input[type="checkbox"] {
-      transform: scale(1.15);
-      cursor: pointer;
-    }
-
-    .slot.full { opacity: 0.75; border-left: 5px solid #2e7d32; }
-    .slot.partial { border-left: 5px solid #f57c00; }
-    .slot.empty { border-left: 5px solid #c71f1f; }
-
-    .slot-label { flex: 1; }
-    .slot-count {
-      font-size: 12px;
-      color: #555;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .loading-note {
-      color: white;
-      font-size: 14px;
-      margin-top: 8px;
-    }
-
     .modal {
       display: none;
       position: fixed;
@@ -272,9 +212,6 @@
       gap: 10px;
     }
 
-    .btn-available { background: #2e7d32; color: white; }
-    .btn-unavailable { background: #757575; color: white; }
-    .btn-swap { background: #f58231; color: white; }
     .btn-approve { background: #1b8f3a; color: white; }
     .btn-reject { background: #c71f1f; color: white; }
 
@@ -346,29 +283,6 @@
     <div class="calendar-wrap">
       <div id="calendar"></div>
     </div>
-
-    <div class="section">
-      <h3>📅 Algemene beschikbaarheid</h3>
-      <div class="section-note">
-        Hier kun je je op voorhand beschikbaar zetten. Per evenement zijn 2 personen nodig.
-      </div>
-
-      <div id="beschikbaarheidContainer"></div>
-
-      <button id="saveAvailabilityBtn" class="primary-btn" style="margin-top:16px;">
-        Beschikbaarheid opslaan
-      </button>
-
-      <div id="loadingSlots" class="loading-note"></div>
-
-      <button
-        id="openDateModalBtn"
-        class="primary-btn"
-        style="margin-top:16px; display:none;"
-      >
-        ➕ Nieuwe datum toevoegen
-      </button>
-    </div>
   </div>
 
   <div id="modal" class="modal">
@@ -381,12 +295,6 @@
         <div id="eventDetails" class="info-grid"></div>
         <div id="bezettingBox" class="status-box"></div>
         <div id="userStateBox" class="user-state"></div>
-
-        <div class="modal-actions">
-          <button class="btn-available" id="availableBtn">Ik ben beschikbaar</button>
-          <button class="btn-unavailable" id="unavailableBtn">Ik kan niet</button>
-          <button class="btn-swap" id="swapBtn">Ik zoek vervanging</button>
-        </div>
 
         <div id="adminActions" class="admin-actions" style="display:none;">
           <div class="admin-actions-title">Admin acties</div>
@@ -437,7 +345,6 @@
     let currentUser = null;
     let currentProfile = null;
     let selectedEvent = null;
-    let availabilityCheckboxes = [];
     let calendar = null;
     let realtimeChannels = [];
     let posten = [];
@@ -455,12 +362,7 @@
         await refreshAll();
       });
 
-      document.getElementById("saveAvailabilityBtn").addEventListener("click", opslaanBeschikbaarheid);
-
       document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-      document.getElementById("availableBtn").addEventListener("click", () => setBeschikbaarheidEvent(true));
-      document.getElementById("unavailableBtn").addEventListener("click", () => setBeschikbaarheidEvent(false));
-      document.getElementById("swapBtn").addEventListener("click", vraagRuil);
       document.getElementById("approveBtn").addEventListener("click", () => updateStatusAanvraag("Goedgekeurd"));
       document.getElementById("rejectBtn").addEventListener("click", () => updateStatusAanvraag("Geweigerd"));
 
@@ -468,7 +370,6 @@
         window.location.href = "admin.html";
       });
 
-      document.getElementById("openDateModalBtn").addEventListener("click", openDatumModal);
       document.getElementById("closeDatumModalBtn").addEventListener("click", closeDatumModal);
       document.getElementById("cancelDateBtn").addEventListener("click", closeDatumModal);
       document.getElementById("saveDateBtn").addEventListener("click", opslaanDatum);
@@ -512,7 +413,6 @@
 
       if (profile.is_admin) {
         document.getElementById("adminBtn").style.display = "inline-block";
-        document.getElementById("openDateModalBtn").style.display = "inline-block";
         document.getElementById("adminActions").style.display = "block";
       }
 
@@ -606,7 +506,6 @@
     async function refreshAll() {
       const selectedPostId = document.getElementById("filterPost").value;
       await loadEvents(selectedPostId);
-      await laadBeschikbaarheidSlots();
     }
 
     async function loadEvents(postFilter = "") {
@@ -675,150 +574,6 @@
       return null;
     }
 
-    async function laadBeschikbaarheidSlots() {
-      const container = document.getElementById("beschikbaarheidContainer");
-      const loading = document.getElementById("loadingSlots");
-
-      container.innerHTML = "";
-      loading.textContent = "Beschikbare datums laden...";
-      availabilityCheckboxes = [];
-
-      const { data: datums, error: datumsError } = await client
-        .from("beschikbare_datums")
-        .select("*")
-        .order("datum", { ascending: true });
-
-      if (datumsError) {
-        console.error("Fout bij laden beschikbare datums:", datumsError);
-        loading.textContent = "Fout bij laden van de beschikbare datums.";
-        return;
-      }
-
-      const { data: beschikbaarheidData, error: beschikbaarheidError } = await client
-        .from("beschikbaarheid")
-        .select("*")
-        .eq("user_email", currentProfile.email);
-
-      if (beschikbaarheidError) {
-        console.error("Fout bij laden beschikbaarheid:", beschikbaarheidError);
-        loading.textContent = "Fout bij laden van je beschikbaarheid.";
-        return;
-      }
-
-      const { data: alleBeschikbaarheden, error: alleError } = await client
-        .from("beschikbaarheid")
-        .select("datum, aanwezig");
-
-      if (alleError) {
-        console.error("Fout bij tellen bezetting:", alleError);
-      }
-
-      const userBeschikbaarheid = beschikbaarheidData || [];
-      const alleRows = alleBeschikbaarheden || [];
-
-      if (!datums || datums.length === 0) {
-        loading.textContent = "Er zijn nog geen datums toegevoegd.";
-        return;
-      }
-
-      datums.forEach(slot => {
-        const datumLabel = maakDatumLabel(slot);
-        const datumKey = slot.datum_tijd || `${slot.datum} ${slot.tijd}`;
-
-        const isChecked = userBeschikbaarheid.some(
-          b => b.datum === datumKey && b.aanwezig === true
-        );
-
-        const aantalAanwezig = alleRows.filter(
-          b => b.datum === datumKey && b.aanwezig === true
-        ).length;
-
-        let slotClass = "empty";
-        if (aantalAanwezig >= 2) slotClass = "full";
-        else if (aantalAanwezig === 1) slotClass = "partial";
-
-        const slotDiv = document.createElement("div");
-        slotDiv.className = `slot ${slotClass}`;
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = isChecked;
-        checkbox.dataset.datum = datumKey;
-
-        const label = document.createElement("div");
-        label.className = "slot-label";
-        label.textContent = datumLabel;
-
-        const count = document.createElement("div");
-        count.className = "slot-count";
-        count.textContent = `${aantalAanwezig}/2 bezet`;
-
-        slotDiv.appendChild(checkbox);
-        slotDiv.appendChild(label);
-        slotDiv.appendChild(count);
-        container.appendChild(slotDiv);
-
-        availabilityCheckboxes.push({
-          checkbox,
-          datum: datumKey
-        });
-      });
-
-      loading.textContent = "";
-    }
-
-    function maakDatumLabel(slot) {
-      if (slot.datum_tijd) {
-        return slot.datum_tijd.replace("T", " ");
-      }
-      if (slot.datum && slot.tijd) {
-        return `${slot.datum} ${slot.tijd}`;
-      }
-      return slot.datum || "Onbekende datum";
-    }
-
-    async function opslaanBeschikbaarheid() {
-      if (!currentProfile?.email) {
-        alert("Gebruiker niet correct geladen.");
-        return;
-      }
-
-      const { error: deleteError } = await client
-        .from("beschikbaarheid")
-        .delete()
-        .eq("user_email", currentProfile.email);
-
-      if (deleteError) {
-        alert("Fout bij verwijderen oude beschikbaarheid: " + deleteError.message);
-        return;
-      }
-
-      const nieuweRows = availabilityCheckboxes
-        .filter(item => item.checkbox.checked)
-        .map(item => ({
-          user_id: currentProfile.user_id,
-          user_name: currentProfile.name || currentProfile.email,
-          user_email: currentProfile.email,
-          datum: item.datum,
-          aanwezig: true,
-          ruil_gevraagd: false
-        }));
-
-      if (nieuweRows.length > 0) {
-        const { error: insertError } = await client
-          .from("beschikbaarheid")
-          .insert(nieuweRows);
-
-        if (insertError) {
-          alert("Fout bij opslaan: " + insertError.message);
-          return;
-        }
-      }
-
-      alert("Beschikbaarheid opgeslagen.");
-      await laadBeschikbaarheidSlots();
-    }
-
     function openEventModal(event) {
       selectedEvent = event;
 
@@ -832,10 +587,10 @@
       `;
 
       document.getElementById("bezettingBox").innerHTML =
-        `Event geselecteerd voor <strong>${props.school || "bezoek"}</strong>.`;
+        `Bezoek ingepland voor <strong>${props.school || "bezoek"}</strong>.`;
 
       document.getElementById("userStateBox").innerHTML =
-        `Hier kun je je aanwezigheid voor dit event beheren.`;
+        `Hier zie je de details van dit ingeplande bezoek.`;
 
       document.getElementById("modal").style.display = "block";
     }
@@ -848,68 +603,6 @@
     function formatDateTime(date) {
       if (!date) return "-";
       return new Date(date).toLocaleString("nl-BE");
-    }
-
-    async function setBeschikbaarheidEvent(isAanwezig) {
-      if (!selectedEvent || !currentProfile) return;
-
-      const datum = selectedEvent.startStr;
-
-      await client
-        .from("beschikbaarheid")
-        .delete()
-        .eq("user_email", currentProfile.email)
-        .eq("datum", datum);
-
-      if (isAanwezig) {
-        const { error } = await client
-          .from("beschikbaarheid")
-          .insert([{
-            user_id: currentProfile.user_id,
-            user_name: currentProfile.name || currentProfile.email,
-            user_email: currentProfile.email,
-            datum: datum,
-            aanwezig: true,
-            ruil_gevraagd: false
-          }]);
-
-        if (error) {
-          alert("Fout bij opslaan: " + error.message);
-          return;
-        }
-      }
-
-      alert(isAanwezig ? "Je bent als beschikbaar opgeslagen." : "Je werd verwijderd van dit event.");
-      closeModal();
-      await laadBeschikbaarheidSlots();
-    }
-
-    async function vraagRuil() {
-      if (!selectedEvent || !currentProfile) return;
-
-      const datum = selectedEvent.startStr;
-
-      const { error } = await client
-        .from("beschikbaarheid")
-        .upsert([{
-          user_id: currentProfile.user_id,
-          user_name: currentProfile.name || currentProfile.email,
-          user_email: currentProfile.email,
-          datum: datum,
-          aanwezig: true,
-          ruil_gevraagd: true
-        }], {
-          onConflict: "user_email,datum"
-        });
-
-      if (error) {
-        alert("Fout bij aanvragen vervanging: " + error.message);
-        return;
-      }
-
-      alert("Vervanging gevraagd.");
-      closeModal();
-      await laadBeschikbaarheidSlots();
     }
 
     async function updateStatusAanvraag(status) {
@@ -987,7 +680,6 @@
       document.getElementById("nieuweDatum").value = "";
       document.getElementById("nieuweTijd").value = "";
       closeDatumModal();
-      await laadBeschikbaarheidSlots();
     }
 
     function startRealtime() {
@@ -1002,20 +694,13 @@
         .subscribe();
 
       const ch2 = client
-        .channel("dashboard-beschikbaarheid")
-        .on("postgres_changes", { event: "*", schema: "public", table: "beschikbaarheid" }, async () => {
-          await laadBeschikbaarheidSlots();
-        })
-        .subscribe();
-
-      const ch3 = client
         .channel("dashboard-datums")
         .on("postgres_changes", { event: "*", schema: "public", table: "beschikbare_datums" }, async () => {
-          await laadBeschikbaarheidSlots();
+          await refreshAll();
         })
         .subscribe();
 
-      realtimeChannels.push(ch1, ch2, ch3);
+      realtimeChannels.push(ch1, ch2);
     }
 
     async function logout() {
